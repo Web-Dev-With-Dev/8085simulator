@@ -892,6 +892,7 @@ public class Matrix {
     {
         int no[];
         PC++;
+        MemoryHeatmapVisualizer.recordExec(PC - 1, 1);
         if(o.stopAtIndex==index)o.stop=true;
         switch(index)
         {
@@ -901,9 +902,13 @@ public class Matrix {
             case 1://LXI B
                    C=memory[PC++];
                    B=memory[PC++];
+                   MemoryHeatmapVisualizer.recordRead(PC - 2);
+                   MemoryHeatmapVisualizer.recordRead(PC - 1);
                    break;
             case 2://STAX B
-                    memory[B<<8+C]=A;
+                    int targetAddr2 = (B << 8) + C;
+                    memory[targetAddr2] = A;
+                    MemoryHeatmapVisualizer.recordWrite(targetAddr2);
                     break;
             case 3://INX B
                    temp=B<<8 | C;
@@ -928,7 +933,9 @@ public class Matrix {
                    if(L>255){H=H+L/256;L=L%256;}
                    if(H>255){F=(F&254)^1;H=H%256;}
                     break;
-            case 10:A=memory[256*B+C];
+            case 10:int addrLdaxB = 256 * B + C;
+                    A = memory[addrLdaxB];
+                    MemoryHeatmapVisualizer.recordRead(addrLdaxB);
                     break;
             case 11:C--;
                     if(((B*256)+C)<0){B=255;C=255;}
@@ -953,7 +960,9 @@ public class Matrix {
                     E=memory[PC++];
                     D=memory[PC++];
                     break;
-            case 18:memory[256*D+E]=A;
+            case 18:int addrStaxD = 256 * D + E;
+                    memory[addrStaxD] = A;
+                    MemoryHeatmapVisualizer.recordWrite(addrStaxD);
                     break;
             case 19:temp=D<<8 | E;
                    temp++;
@@ -978,7 +987,9 @@ public class Matrix {
                    if(L>255){H=H+L/256;L=L%256;}
                    if(H>255){F=(F&254)^1;H=H%256;}
                     break;
-            case 26:A=memory[256*D+E];
+            case 26:int addrLdaxD = 256 * D + E;
+                    A = memory[addrLdaxD];
+                    MemoryHeatmapVisualizer.recordRead(addrLdaxD);
                     break;
             case 27:E--;
                     if(((D*256)+E)<0){D=255;E=255;}
@@ -1005,6 +1016,8 @@ public class Matrix {
             case 34:temp=(memory[PC++]+memory[PC++]*256);
                     memory[temp]=L;
                     memory[temp+1]=H;
+                    MemoryHeatmapVisualizer.recordWrite(temp);
+                    MemoryHeatmapVisualizer.recordWrite(temp + 1);
                     break;
             case 35:temp=H<<8 | L;
                    temp++;
@@ -1039,6 +1052,8 @@ public class Matrix {
             case 42:temp=(memory[PC++]+memory[PC++]*256);
                     L=memory[temp];
                     H=memory[temp+1];
+                    MemoryHeatmapVisualizer.recordRead(temp);
+                    MemoryHeatmapVisualizer.recordRead(temp + 1);
                     break;
             case 43:L--;
                     if(((H*256)+L)<0){H=255;L=255;}
@@ -1065,17 +1080,23 @@ public class Matrix {
                     break;
             case 49:SP=memory[PC++]+memory[PC++]*256;
                     break;
-            case 50:memory[memory[PC++]+memory[PC++]*256]=A;
+            case 50:int staAddr = memory[PC++] + memory[PC++] * 256;
+                    memory[staAddr] = A;
+                    MemoryHeatmapVisualizer.recordWrite(staAddr);
                     break;
             case 51:SP=(SP+1)&0xFFFF;
                    break;
             case 52:F=getFlagADD(memory[256*H+L],0x01)&0xFE | F&0x01;                    
                     memory[256*H+L]=(memory[256*H+L]+1)&0xff;
+                    MemoryHeatmapVisualizer.recordWrite(256*H+L);
                     break;
             case 53:F=getFlagADD(memory[256*H+L],0xFF)&0xFE | F&0x01; 
                     memory[256*H+L]=(memory[256*H+L]-1)&0xff;                    
+                    MemoryHeatmapVisualizer.recordWrite(256*H+L);
                     break;
-            case 54:memory[256*H+L]=memory[PC++];
+            case 54:int mviMAddr = 256 * H + L;
+                    memory[mviMAddr] = memory[PC++];
+                    MemoryHeatmapVisualizer.recordWrite(mviMAddr);
                     break;
             case 55:F=(F|1);
                     break;
@@ -1085,7 +1106,9 @@ public class Matrix {
                    if(L>255){H=H+L/256;L=L%256;}
                    if(H>255){F=(F&254)^1;H=H%256;}
                    break;
-            case 58:A=memory[memory[PC++]+memory[PC++]*256];
+            case 58:int ldaAddr = memory[PC++] + memory[PC++] * 256;
+                    A = memory[ldaAddr];
+                    MemoryHeatmapVisualizer.recordRead(ldaAddr);
                     break;
             case 59:SP--;
                     if(SP<0)SP=stopAddress;

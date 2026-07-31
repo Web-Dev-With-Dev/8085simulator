@@ -22,6 +22,7 @@ public class TextEditor {
     Hexcode h = new Hexcode();
     Preprocessor p;
     Assembler asm;
+    AutoCompleter autoCompleter;
     String[] code;
 
     /** Creates new form text */
@@ -30,7 +31,7 @@ public class TextEditor {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
         jScrollPane1.setViewportView(jTextPane1);
-        jTextPane1.setFont(new java.awt.Font("Tahoma", 1, 11));
+        jTextPane1.setFont(new java.awt.Font("Monospaced", java.awt.Font.BOLD, 13));
         jTextPane1.addKeyListener(new java.awt.event.KeyAdapter() {
 
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -49,7 +50,7 @@ public class TextEditor {
         h.initHexcode();
         code = h.S;
         jTextPane1.getDocument().putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
-
+        autoCompleter = new AutoCompleter(jTextPane1);
     }
 
     public void setColor(Color c, String s) {
@@ -66,12 +67,18 @@ public class TextEditor {
     }
 
     public void jTextPane1KeyReleased(java.awt.event.KeyEvent evt) {
-
         if (!doTextPaneEventHandle(evt)) {
             return;
         }
         colorEditor();
+        runLinting();
+    }
 
+    public void runLinting() {
+        if (asm != null) {
+            java.util.List<SyntaxLinter.LintError> errors = SyntaxLinter.lint(jTextPane1.getText());
+            asm.updateLintStatus(errors);
+        }
     }
 
     public void jTextPane1FocusLost(java.awt.event.FocusEvent evt) {
@@ -143,8 +150,12 @@ public class TextEditor {
         String s = jTextPane1.getText();
         int pt = jTextPane1.getCaretPosition();
         jTextPane1.setText("");
-        Color c = Color.black, tmpC = Color.black;
-        //label marker
+
+        boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
+        Color defaultTextColor = isDark ? new Color(0xD4D4D4) : Color.black;
+        Color c = defaultTextColor, tmpC = defaultTextColor;
+
+        // label marker
         boolean label = false;
         for (int i = s.length() - 2; i >= 0; i--) {
             if (s.charAt(i) == ':') {
@@ -178,42 +189,42 @@ public class TextEditor {
             }
         }
 
-        Color lastColor = new Color(0x000000);
+        Color lastColor = defaultTextColor;
         for (int i = 0, mode = 0; i < s.length(); i++) {
 
             if (s.charAt(i) == '#') {
-                c = new Color(0xCC0000);
+                c = isDark ? new Color(0xFF6B6B) : new Color(0xCC0000);
                 mode = 3;
             } else if (s.charAt(i) == '.') {
-                c = new Color(0xCC0000);
+                c = isDark ? new Color(0xFF6B6B) : new Color(0xCC0000);
                 mode = 3;
             } else if (s.charAt(i) == ';') {
-                c = new Color(0xC0C0C0);
+                c = isDark ? new Color(0x6A9955) : new Color(0x808080);
                 mode = 2;
             } else if (s.charAt(i) == '/') {
-                c = new Color(0xC0C0C0);
+                c = isDark ? new Color(0x6A9955) : new Color(0x808080);
                 mode = 2;
             } else if (s.charAt(i) == 0x207) {
-                c = new Color(0x00CC66);
+                c = isDark ? new Color(0x4EC9B0) : new Color(0x00CC66);
                 mode = 1;
             } else if (s.charAt(i) == '\n') {
-                c = Color.black;
+                c = defaultTextColor;
                 mode = 0;
             }
 
             if (mode < 2) {
                 if (s.charAt(i) == 0x205) {
-                    c = new Color(0x0066CC);
+                    c = isDark ? new Color(0x569CD6) : new Color(0x0066CC);
                 } else if (s.charAt(i) == 0x206) {
-                    c = new Color(0xCCCC00);
+                    c = defaultTextColor;
                 }
             }
 
             if (mode == 3) {
                 if (s.charAt(i) == 0x200) {
-                    c = new Color(0x660000);
+                    c = isDark ? new Color(0xDCDCAA) : new Color(0x660000);
                 } else if (s.charAt(i) == 0x201) {
-                    c = new Color(0xCC0000);
+                    c = isDark ? new Color(0xFF6B6B) : new Color(0xCC0000);
                 }
             }
 
@@ -221,17 +232,17 @@ public class TextEditor {
                 lastColor = c;
             }
 
-            //if(s.charAt(i)>='0'&&s.charAt(i)<='9')setColor(Color.orange, Character.toString(s.charAt(i)));
             if (s.charAt(i) != 0x205 && s.charAt(i) != 0x206 && s.charAt(i) != 0x207 && s.charAt(i) != 0x200 && s.charAt(i) != 0x201) {
                 setColor(c, Character.toString(s.charAt(i)));
             }
-
 
             if (s.charAt(i) == ':') {
                 c = lastColor;
             }
         }
-        jTextPane1.setCaretPosition(pt);
+        if (pt <= jTextPane1.getText().length()) {
+            jTextPane1.setCaretPosition(pt);
+        }
     }
 
     public void highligher(int row) {

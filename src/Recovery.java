@@ -91,17 +91,20 @@ public class Recovery extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-
-        o.setEnabled(true);
-        o.jTextAreaAssemblyLanguageEditor.setText(s);
-        o.textEditor.colorEditor();
+        if (o != null) {
+            o.setEnabled(true);
+            o.jTextAreaAssemblyLanguageEditor.setText(s);
+            o.textEditor.colorEditor();
+            o.toFront();
+        }
         dispose();
-
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-
-        o.setEnabled(true);
+        if (o != null) {
+            o.setEnabled(true);
+            o.toFront();
+        }
         dispose();
     }//GEN-LAST:event_jButton2ActionPerformed
 

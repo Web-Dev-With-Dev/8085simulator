@@ -60,12 +60,14 @@ public class SplashScreen extends JWindow {
     }
 
     public static void main(String[] args) {
+        try {
+            com.formdev.flatlaf.FlatDarkLaf.setup();
+        } catch (Exception ex) {
+            System.err.println("Failed to initialize FlatDarkLaf theme: " + ex);
+        }
 
         // Throw a nice little title page up on the screen first
         SplashScreen splash = new SplashScreen(1000);
         Assembler.main(args);
-        // Normally, we'd call splash.showSplash() and get on
-        // with the program. But, since this is only a test...
-
     }
 }

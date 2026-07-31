@@ -66,63 +66,137 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         jTabbedPaneInterface.addTab("I/O Port Editor", jScrollPane4);
         //jTableAssembler.setRowSelectionAllowed(true);
         //jTableAssembler.setRowSelectionInterval(0, 1);
-        
+        setupModernEnhancements();
     }
 
-    public void sampleCode()
-    {
-        JarFile jarFile = null;
+    public void sampleCode() {
+        if (jMenu5 == null) return;
+        jMenu5.removeAll();
+        boolean loadedAny = false;
+
+        // Try reading from JarFile if inside JAR
         try {
-            String filepath=Assembler.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-            for(int i=0;i<filepath.length()-2;i++)
-            {
-                if(filepath.substring(i, i+3).equalsIgnoreCase("%20"))
-                    filepath=filepath.substring(0,i)+" "+filepath.substring(i+3,filepath.length());
+            String filepath = Assembler.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            filepath = java.net.URLDecoder.decode(filepath, "UTF-8");
+            if (filepath.endsWith(".jar")) {
+                try (JarFile jarFile = new JarFile(filepath)) {
+                    Enumeration<JarEntry> enum1 = jarFile.entries();
+                    while (enum1.hasMoreElements()) {
+                        JarEntry entry = enum1.nextElement();
+                        String name = entry.getName();
+                        if (name.startsWith("8085 Program/") && name.endsWith(".asm") && name.length() > 17) {
+                            String progName = name.substring(13, name.length() - 4);
+                            addSampleMenuItem(progName);
+                            loadedAny = true;
+                        }
+                    }
+                }
             }
-            jarFile = new JarFile(filepath);
-            Enumeration enum1 = jarFile.entries();
-            while (enum1.hasMoreElements()) {
-             jMenuCreator(enum1.nextElement());
-           }
         } catch (Exception ex) {
-            System.err.println(ex);
+            ex.printStackTrace();
         }
-     }
 
-     JMenuItem jMenuItem[]= new JMenuItem[100];
-     int menu=0;
-    private void jMenuCreator(Object obj) {
-       JarEntry entry = (JarEntry)obj;
-       String name = entry.getName();
-       if(name.startsWith("8085 Program/")&&name.length()>13)
-       {
-           jMenuItem[menu] = new javax.swing.JMenuItem();
-           jMenuItem[menu].setText(name.substring(13,name.length()-4));
-           jMenu5.add(jMenuItem[menu]);
-           jMenuItem[menu].addActionListener(new java.awt.event.ActionListener() {
-               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                   jMenuItemArrayActionPerformed(evt);
-               }
-           });
+        // Fallback: Try reading from directory on disk (e.g. src/8085 Program)
+        if (!loadedAny) {
+            java.io.File dir = new java.io.File("src/8085 Program");
+            if (!dir.exists()) {
+                dir = new java.io.File("8085 Program");
+            }
+            if (dir.exists() && dir.isDirectory()) {
+                java.io.File[] files = dir.listFiles((d, name) -> name.endsWith(".asm"));
+                if (files != null && files.length > 0) {
+                    java.util.Arrays.sort(files, (f1, f2) -> f1.getName().compareToIgnoreCase(f2.getName()));
+                    for (java.io.File f : files) {
+                        String name = f.getName();
+                        String progName = name.substring(0, name.length() - 4);
+                        addSampleMenuItem(progName);
+                        loadedAny = true;
+                    }
+                }
+            }
+        }
 
-       }
-     }
+        // Ultimate fallback: Predefined list of sample program names
+        if (!loadedAny) {
+            String[] defaultSamples = {
+                "1's complement of a 16 bit number",
+                "1's complement of an 8 bit number",
+                "2's complement of a 16 bit number",
+                "2's complement of an 8 bit number",
+                "8 BIT DIVISION",
+                "8 BIT MULTIPLY",
+                "8 bit decimal substraction ",
+                "Addition of two 16bit numbers having sum 16 bit or more ",
+                "Addition of two 8bit numbers having 16 bit sum",
+                "Addition of two 8bit numbers",
+                "Bubble Sorting",
+                "Decimal addition of two 8bit numbers having 16 bit sum",
+                "Fibonacci Series",
+                "Mask off least significant 4 bits of an 8-bit number",
+                "Mask off most significant 4 bits of an 8-bit number",
+                "SUM OF A SERIES OF MULTIBYTE DECIMAL NUMBERS",
+                "Shift an 16-bit number left by 1 bit",
+                "Shift an 16-bit number left by 2 bits",
+                "Shift an 8-bit number left by 1 bit",
+                "Shift an 8-bit number left by 2 bits",
+                "Substraction of two 8bit numbers",
+                "To find square from look up table"
+            };
+            for (String progName : defaultSamples) {
+                addSampleMenuItem(progName);
+            }
+        }
+    }
+
+    private void addSampleMenuItem(String progName) {
+        javax.swing.JMenuItem item = new javax.swing.JMenuItem(progName);
+        item.addActionListener(e -> jMenuItemArrayActionPerformed(e));
+        jMenu5.add(item);
+    }
 
     private void jMenuItemArrayActionPerformed(java.awt.event.ActionEvent evt) {
-        String line, s = "";
+        String progName = evt.getActionCommand();
+        String s = "";
+        BufferedReader in = null;
         try {
-        InputStreamReader jar=new InputStreamReader(Assembler.class.getResourceAsStream("/8085 Program/"+evt.getActionCommand()+".asm"));
-        BufferedReader in = new BufferedReader(jar);
-        while ((line = in.readLine()) != null) {
-        s = s + line + "\n";
-              jTabbedPaneAssemblerEditor.setSelectedIndex(0);
-              jButtonDisassemble.setVisible(false);
-              jButtonAssemble.setVisible(true);
+            InputStream is = Assembler.class.getResourceAsStream("/8085 Program/" + progName + ".asm");
+            if (is == null) {
+                is = Assembler.class.getResourceAsStream("8085 Program/" + progName + ".asm");
+            }
+            if (is != null) {
+                in = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            } else {
+                java.io.File file = new java.io.File("src/8085 Program/" + progName + ".asm");
+                if (!file.exists()) {
+                    file = new java.io.File("8085 Program/" + progName + ".asm");
+                }
+                if (file.exists()) {
+                    in = new BufferedReader(new java.io.FileReader(file));
+                }
+            }
+
+            if (in != null) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+                in.close();
+                s = sb.toString();
+
+                jTabbedPaneAssemblerEditor.setSelectedIndex(0);
+                jButtonDisassemble.setVisible(false);
+                jButtonAssemble.setVisible(true);
+
+                jTextAreaAssemblyLanguageEditor.setText(s);
+                textEditor.colorEditor();
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Could not locate sample file: " + progName + ".asm", "Sample Load Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error reading sample program: " + e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
         }
-        } catch(Exception e){}
-        jTextAreaAssemblyLanguageEditor.setText(s);
-        textEditor.colorEditor();
-        
     }
 
     public void setParameters()
@@ -700,27 +774,27 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
             jInternalFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jInternalFrame3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane12, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane12, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane18, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane18, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jInternalFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel10)
-                    .addComponent(jScrollPane15, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane15, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jInternalFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel12)
-                    .addComponent(jScrollPane17, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane17, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jInternalFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel8)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 9, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane14, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane14, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabelErrorHang)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -1871,100 +1945,160 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
 
    private void jButtonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRunActionPerformed
 
-       jButtonStop.setVisible(true);
-       jButtonRun.setVisible(false);
-       jButtonStep.setVisible(false);
-       jLabelErrorHang.setVisible(false);
-       stop=false;
-       ExecutorService exec = Executors.newCachedThreadPool();
-       exec.execute(this);
-
+        if (continueFrom == 0) {
+            // Fresh start: full reset of all breakpoint edge-trigger state & hit counters
+            // Pass matrix so pre-existing conditions (e.g. A already 0xFF) don't fire immediately
+            ConditionalBreakpointManager.fullReset(matrix);
+        } else {
+            // Resuming after a PAUSE breakpoint: only reset edge-trigger (not hit counters)
+            ConditionalBreakpointManager.resetState(matrix);
+        }
+        jButtonStop.setVisible(true);
+        jButtonRun.setVisible(false);
+        jButtonStep.setVisible(false);
+        jButtonContinue.setVisible(false);
+        jLabelErrorHang.setVisible(false);
+        stop  = false;
+        pause = false;
+        ExecutorService exec = Executors.newCachedThreadPool();
+        exec.execute(this);
 
    }//GEN-LAST:event_jButtonRunActionPerformed
 
     @Override
    public void run()
    {
-       matrix.PC=(continueFrom==0)?engine.Hex2Dec(engine.HexAutoCorrect4digit(jTextFieldBeginFrom.getText())):continueFrom;
-       if(speed[1]!=1){
-       jProgressBar1.setVisible(true);       
-       while((!stop)&&matrix.PC<matrix.stopAddress&&(!pause))
-       {
-               try{
+       matrix.PC = (continueFrom == 0)
+           ? engine.Hex2Dec(engine.HexAutoCorrect4digit(jTextFieldBeginFrom.getText()))
+           : continueFrom;
+
+       if (speed[1] != 1) {
+           // ── Normal / Ultimate speed mode ───────────────────────
+           jProgressBar1.setVisible(true);
+           while ((!stop) && matrix.PC < matrix.stopAddress && (!pause)) {
+               try {
                    matrix.functionRun(matrix.memory[matrix.PC]);
                    jProgressBar1.setIndeterminate(true);
-                   
-               for(int row=0;row<jTableAssembler.getRowCount();row++){
-                  if(jTableAssembler.getValueAt(row, 0)!=null)
-                   if(engine.convertToNum(jTableAssembler.getValueAt(row, 1).toString())==matrix.PC)
-                   if(jTableAssembler.getValueAt(row, 0).toString().equalsIgnoreCase("#")) {
-                              set();
-                              jButtonStep.setVisible(false);
-                              jButtonRun.setVisible(false);
-                              jButtonForward.setVisible(true);
-                              jButtonBackward.setVisible(true);
-                              jButtonStop.setText("Stop");
-                              jButtonStop.setVisible(true);
-                              jLabelErrorHang.setVisible(false);
-                              jButtonContinue.setVisible(true);
-                              continueFrom=matrix.PC;
-                              pause = true;
-                              jTableAssembler.setRowSelectionAllowed(true);
-                              jTableAssembler.changeSelection(row,0, false, false);
-                              }
-               }
-                       if(speed[2]==1){
-                           setResister();
-                            if(matrix.clockCycleCounter%10000==0){set();}
 
+                   // ── Conditional Breakpoint check ───────────────
+                   ConditionalBreakpointManager.TriggeredResult bp =
+                       ConditionalBreakpointManager.checkBreakpoints(matrix);
+                   if (bp != null) {
+                       if (bp.postHitAction == ConditionalBreakpointManager.PostHitAction.PAUSE) {
+                           // Full pause: show continue panel
+                           if (handleBreakpointPause(bp)) break;
+                       } else if (bp.postHitAction == ConditionalBreakpointManager.PostHitAction.RUN_AFTER) {
+                           // Run All After: update status label, keep looping
+                           final String msg = bp.summary;
+                           final int   pc   = matrix.PC;
+                           SwingUtilities.invokeLater(() -> {
+                               set();
+                               if (lintStatusLabel != null)
+                                   lintStatusLabel.setText(" ▶ Breakpoint #" + bp.hitCount + " passed: "
+                                       + msg + "  PC=" + engine.Dec2Hex(pc) + "H — continuing… ");
+                               ConditionalBreakpointManager mgr =
+                                   ConditionalBreakpointManager.getInstance(matrix, Assembler.this);
+                               mgr.setStatus("Hit #" + bp.hitCount + ": " + msg, new java.awt.Color(0x4C, 0xC9, 0xF0));
+                           });
+                           // No break — execution continues smoothly
+                       } else { // RUN_AND_NOTIFY
+                           // Resume run + show a non-blocking toast
+                           final String msg = bp.summary;
+                           final int   pc   = matrix.PC;
+                           SwingUtilities.invokeLater(() -> {
+                               set();
+                               if (lintStatusLabel != null)
+                                   lintStatusLabel.setText(" 🔔 BP Hit #" + bp.hitCount + ": " + msg
+                                       + "  PC=" + engine.Dec2Hex(pc) + "H ");
+                               showBreakpointToast(msg, pc);
+                           });
+                           // No break — execution continues smoothly
                        }
-               }
-               catch(StringIndexOutOfBoundsException e)
-                {
+                   }
+
+                   // ── Mnemonic breakpoint check (# marker) ───────
+                   for (int row = 0; row < jTableAssembler.getRowCount(); row++) {
+                       if (jTableAssembler.getValueAt(row, 0) != null)
+                           if (engine.convertToNum(jTableAssembler.getValueAt(row, 1).toString()) == matrix.PC)
+                               if (jTableAssembler.getValueAt(row, 0).toString().equalsIgnoreCase("#")) {
+                                   set();
+                                   jButtonStep.setVisible(false);
+                                   jButtonRun.setVisible(false);
+                                   jButtonForward.setVisible(true);
+                                   jButtonBackward.setVisible(true);
+                                   jButtonStop.setText("Stop");
+                                   jButtonStop.setVisible(true);
+                                   jLabelErrorHang.setVisible(false);
+                                   jButtonContinue.setVisible(true);
+                                   continueFrom = matrix.PC;
+                                   pause = true;
+                                   jTableAssembler.setRowSelectionAllowed(true);
+                                   jTableAssembler.changeSelection(row, 0, false, false);
+                               }
+                   }
+
+                   if (speed[2] == 1) {
+                       setResister();
+                       if (matrix.clockCycleCounter % 10000 == 0) { set(); }
+                   }
+               } catch (StringIndexOutOfBoundsException e) {
                    jButtonStop.doClick();
                    jLabelErrorHang.setText("You have exceeded the memory range");
                    jLabelErrorHang.setVisible(true);
                }
-
-       }}
-       else{
-                    if(continueFrom==0)jButtonStop.setText("Pause");
-                  //jButtonContinue.setVisible(true);
-                  while((!stop)&&matrix.PC<matrix.stopAddress&&(!pause))
-                  {
-                      try {
-               for(int row=0;row<jTableAssembler.getRowCount();row++){
-                  if(jTableAssembler.getValueAt(row, 0)!=null)
-                   if(engine.convertToNum(jTableAssembler.getValueAt(row, 1).toString())==matrix.PC)
-                   if(jTableAssembler.getValueAt(row, 0).toString().equalsIgnoreCase("#")) {
-                              jButtonStep.setVisible(false);
-                              jButtonRun.setVisible(false);
-                              jButtonForward.setVisible(true);
-                              jButtonBackward.setVisible(true);
-                              jButtonStop.setVisible(true);
-                              jButtonStop.setText("Stop");
-                              jLabelErrorHang.setVisible(false);
-                              jButtonContinue.setVisible(true);
-                              continueFrom=matrix.PC;
-                              jTableAssembler.setRowSelectionAllowed(true);
-                              jTableAssembler.changeSelection(row,0, false, false);
-                              pause = true;
-                              }
-                            jButtonForwardActionPerformed(null);
-                            Thread.sleep((long) (speed[0] * 1000));
-                        }
-                      } catch (Exception e) {
-                      }
-                  }
-
+           }
+       } else {
+           // ── Step-by-step (slow) speed mode ─────────────────────
+           if (continueFrom == 0) jButtonStop.setText("Pause");
+           while ((!stop) && matrix.PC < matrix.stopAddress && (!pause)) {
+               try {
+                   for (int row = 0; row < jTableAssembler.getRowCount(); row++) {
+                       if (jTableAssembler.getValueAt(row, 0) != null)
+                           if (engine.convertToNum(jTableAssembler.getValueAt(row, 1).toString()) == matrix.PC)
+                               if (jTableAssembler.getValueAt(row, 0).toString().equalsIgnoreCase("#")) {
+                                   jButtonStep.setVisible(false);
+                                   jButtonRun.setVisible(false);
+                                   jButtonForward.setVisible(true);
+                                   jButtonBackward.setVisible(true);
+                                   jButtonStop.setVisible(true);
+                                   jButtonStop.setText("Stop");
+                                   jLabelErrorHang.setVisible(false);
+                                   jButtonContinue.setVisible(true);
+                                   continueFrom = matrix.PC;
+                                   jTableAssembler.setRowSelectionAllowed(true);
+                                   jTableAssembler.changeSelection(row, 0, false, false);
+                                   pause = true;
+                               }
+                       jButtonForwardActionPerformed(null);
+                       Thread.sleep((long) (speed[0] * 1000));
+                   }
+               } catch (Exception e) {
+               }
+           }
        }
-       if(!pause){
-           jButtonStop.setText("Stop");
-           jButtonStop.doClick();
+
+       if (!pause) {
+           // Normal / Program Completion end: update UI cleanly
+           final int endPc = matrix.PC;
+           final boolean completed = (getMaxProgramAddress() > 0 && endPc >= getMaxProgramAddress());
+           SwingUtilities.invokeLater(() -> {
+               jButtonStop.setText("Stop");
+               jButtonStop.doClick();
+               jProgressBar1.setIndeterminate(false);
+               jProgressBar1.setVisible(false);
+               set();
+               if (completed && lintStatusLabel != null) {
+                   lintStatusLabel.setText(" ✅ Program Execution Completed Successfully at PC = " + engine.Dec2Hex(endPc) + "H ");
+               }
+           });
+       } else {
+           // Paused by breakpoint: only update progress bar; button UI handled by handleBreakpointPause's invokeLater
+           SwingUtilities.invokeLater(() -> {
+               jProgressBar1.setIndeterminate(false);
+               jProgressBar1.setVisible(false);
+               set();
+           });
        }
-       jProgressBar1.setIndeterminate(false);
-       jProgressBar1.setVisible(false);
-       set();
    }
 
    private void jButtonStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepActionPerformed
@@ -1997,6 +2131,10 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
        continueFrom=0;
        stop=true;
        pause=false;
+       // Full stop: reset ALL breakpoint state including hit counters; pass matrix to pre-seed
+       ConditionalBreakpointManager.fullReset(matrix);
+       if (lintStatusLabel != null)
+           lintStatusLabel.setText(" ⏹ Stopped — Breakpoint state reset ");
        File f=new File("cache");
        deleteDir(f);
      }
@@ -2475,16 +2613,19 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                     jTableAssembler.setValueAt("       "+engine.I[funcNo][0],i,5);
                     jTableAssembler.setValueAt("       "+engine.I[funcNo][1],i,6);
                     jTableAssembler.setValueAt("      "+engine.I[funcNo][2],i,7);
-                    matrix.memory[(engine.Hex2Dec(jTextFieldMemBegin.getText())+i+memShiftTemp)&0xFFFF]=funcNo;
+                    int writeAddr1 = (engine.Hex2Dec(jTextFieldMemBegin.getText()) + i + memShiftTemp) & 0xFFFF;
+                    matrix.memory[writeAddr1] = funcNo;
+                    MemoryHeatmapVisualizer.recordExec(writeAddr1, 1);
 
                     for(int j=1;j<engine.I[funcNo][0];j++)
                     {
                         i++;
-                        jTableAssembler.setValueAt(engine.Dec2Hex((engine.Hex2Dec(jTextFieldMemBegin.getText())+i+memShiftTemp)&0xFFFF),i,1);
+                        int writeAddr2 = (engine.Hex2Dec(jTextFieldMemBegin.getText()) + i + memShiftTemp) & 0xFFFF;
+                        jTableAssembler.setValueAt(engine.Dec2Hex(writeAddr2),i,1);
                         jTableAssembler.setValueAt("       "+s[j], i, 4);
                         jTableAssembler.setValueAt("", i, 3);
-                        matrix.memory[(engine.Hex2Dec(jTextFieldMemBegin.getText())+i+memShiftTemp)&0xFFFF]=engine.Hex2Dec(s[j]);
-
+                        matrix.memory[writeAddr2] = engine.Hex2Dec(s[j]);
+                        MemoryHeatmapVisualizer.recordExec(writeAddr2, 1);
                     }
 
           }
@@ -2716,8 +2857,144 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
          jButtonStop.doClick();
      }
      matrix.functionRun(matrix.memory[matrix.PC]);
-     set();      
-   }//GEN-LAST:event_jButtonForwardActionPerformed
+       matrix.functionRun(matrix.memory[matrix.PC]);
+      set();      
+      handleBreakpointCheck();
+    }//GEN-LAST:event_jButtonForwardActionPerformed
+
+    /**
+     * Calculates the highest memory address of the assembled program
+     * based on rows in jTableAssembler.
+     */
+    public int getMaxProgramAddress() {
+        int maxAddr = 0;
+        for (int r = 0; r < jTableAssembler.getRowCount(); r++) {
+            if (jTableAssembler.getValueAt(r, 1) != null && !jTableAssembler.getValueAt(r, 1).toString().trim().isEmpty()) {
+                try {
+                    int addr = engine.convertToNum(jTableAssembler.getValueAt(r, 1).toString().trim());
+                    int bytes = 1;
+                    if (jTableAssembler.getValueAt(r, 5) != null && !jTableAssembler.getValueAt(r, 5).toString().trim().isEmpty()) {
+                        bytes = Integer.parseInt(jTableAssembler.getValueAt(r, 5).toString().trim());
+                    }
+                    if (addr + bytes > maxAddr) {
+                        maxAddr = addr + bytes;
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+        return maxAddr;
+    }
+
+    /**
+     * Handles a PAUSE-action breakpoint: pauses execution, shows the
+     * Continue panel, highlights the row, and shows a modal dialog.
+     * Returns true to signal the run loop should break.
+     */
+    public boolean handleBreakpointPause(ConditionalBreakpointManager.TriggeredResult bp) {
+        pause        = true;
+        continueFrom = matrix.PC;
+        final String ruleMsg  = bp.summary;
+        final int    currentPc = matrix.PC;
+        final int    hitNo     = bp.hitCount;
+
+        SwingUtilities.invokeLater(() -> {
+            set();
+            jProgressBar1.setVisible(false);
+            // Show step/continue panel — NOT Run/Step (those restart from beginning)
+            jButtonRun.setVisible(false);
+            jButtonStep.setVisible(false);
+            jButtonForward.setVisible(true);
+            jButtonBackward.setVisible(true);
+            jButtonContinue.setVisible(true);
+            jButtonStop.setVisible(true);
+            jButtonStop.setText("Stop");
+
+            // Highlight the paused instruction row in the assembler table
+            for (int r = 0; r < jTableAssembler.getRowCount(); r++) {
+                if (jTableAssembler.getValueAt(r, 1) != null) {
+                    try {
+                        if (engine.convertToNum(jTableAssembler.getValueAt(r, 1).toString()) == currentPc) {
+                            jTableAssembler.setRowSelectionAllowed(true);
+                            jTableAssembler.changeSelection(r, 0, false, false);
+                            break;
+                        }
+                    } catch (Exception ex) {}
+                }
+            }
+
+            if (lintStatusLabel != null) {
+                lintStatusLabel.setText(" ⏸️ Breakpoint #" + hitNo + " Hit: "
+                    + ruleMsg + "  |  PC = " + engine.Dec2Hex(currentPc)
+                    + "H  |  Press Continue ▶ to resume Run-All ");
+            }
+
+            // Update manager status badge
+            ConditionalBreakpointManager.getInstance(matrix, Assembler.this)
+                .setStatus("Paused at #" + hitNo + ": " + ruleMsg, new java.awt.Color(0xFF, 0xC1, 0x07));
+
+            // Non-blocking modal (fires after EDT processes layout)
+            javax.swing.Timer dlgTimer = new javax.swing.Timer(60, ev -> {
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Conditional Breakpoint Triggered!\n"
+                    + "Rule  : " + ruleMsg + "\n"
+                    + "PC    : " + engine.Dec2Hex(currentPc) + "H\n"
+                    + "Hit # : " + hitNo + "\n\n"
+                    + "Press \"Continue\" to resume Run-All-At-Once\n"
+                    + "or \"Step\" (Forward/Backward) to single-step.",
+                    "⏸️ Breakpoint Hit",
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+            });
+            dlgTimer.setRepeats(false);
+            dlgTimer.start();
+        });
+        return true;  // signal run() to break the loop
+    }
+
+    /**
+     * Shows a small non-blocking toast notification for RUN_AND_NOTIFY breakpoints.
+     */
+    public void showBreakpointToast(String ruleMsg, int pc) {
+        JWindow toast = new JWindow(this);
+        toast.setAlwaysOnTop(true);
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new java.awt.Color(0x1A, 0x3A, 0x5A));
+        panel.setBorder(BorderFactory.createLineBorder(new java.awt.Color(0x4C, 0xC9, 0xF0), 2, true));
+        JLabel lbl = new JLabel("  🔔 BP: " + ruleMsg + "  PC=" + engine.Dec2Hex(pc) + "H  ");
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setForeground(new java.awt.Color(0x4C, 0xC9, 0xF0));
+        lbl.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+        panel.add(lbl);
+        toast.add(panel);
+        toast.pack();
+        // Position at top-right of assembler window
+        java.awt.Point loc = getLocationOnScreen();
+        toast.setLocation(loc.x + getWidth() - toast.getWidth() - 20, loc.y + 60);
+        toast.setVisible(true);
+        // Auto-dismiss after 2.5 seconds
+        javax.swing.Timer dismissTimer = new javax.swing.Timer(2500, e -> toast.dispose());
+        dismissTimer.setRepeats(false);
+        dismissTimer.start();
+    }
+
+    /** Legacy: used by jButtonForward (step-mode) — checks breakpoint and pauses if PAUSE action */
+    public boolean handleBreakpointCheck() {
+        ConditionalBreakpointManager.TriggeredResult bp =
+            ConditionalBreakpointManager.checkBreakpoints(matrix);
+        if (bp == null) return false;
+        if (bp.postHitAction == ConditionalBreakpointManager.PostHitAction.PAUSE) {
+            return handleBreakpointPause(bp);
+        } else if (bp.postHitAction == ConditionalBreakpointManager.PostHitAction.RUN_AND_NOTIFY) {
+            SwingUtilities.invokeLater(() -> showBreakpointToast(bp.summary, matrix.PC));
+        } else {
+            // RUN_AFTER: in step mode, just flash status
+            if (lintStatusLabel != null)
+                SwingUtilities.invokeLater(() ->
+                    lintStatusLabel.setText(" ▶ BP passed: " + bp.summary
+                        + "  PC=" + engine.Dec2Hex(matrix.PC) + "H "));
+        }
+        return false;
+    }
 
    private void jTextFieldBeginFromKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldBeginFromKeyReleased
       matrix.PC=engine.Hex2Dec(engine.HexAutoCorrect4digit(jTextFieldBeginFrom.getText()));
@@ -2827,7 +3104,10 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
 
    private void jButtonContinueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonContinueActionPerformed
 
-       continueFrom=matrix.PC;
+       continueFrom = matrix.PC;
+       // Reset edge-trigger state so same condition can re-fire after continuing;
+       // pass matrix to pre-seed so we don't immediately re-trigger on the same state
+       ConditionalBreakpointManager.resetState(matrix);
        jButtonForward.setVisible(false);
        jButtonBackward.setVisible(false);
        jButtonStop.setText("Pause");
@@ -2837,10 +3117,12 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
        jScrollPane12.setVisible(false);
        jScrollPane12.setVisible(true);
        jButtonContinue.setVisible(false);
-       pause=false;
+       pause = false;
+       if (lintStatusLabel != null)
+           lintStatusLabel.setText(" ▶ Resuming Run-All from PC = "
+               + engine.Dec2Hex(continueFrom) + "H … ");
        ExecutorService exec = Executors.newCachedThreadPool();
        exec.execute(this);
-
 
    }//GEN-LAST:event_jButtonContinueActionPerformed
 
@@ -3431,6 +3713,7 @@ public int find=0;
         jTableCounter.setValueAt("                  " + engine.Dec2Hex2digit(matrix.H) + engine.Dec2Hex2digit(matrix.L), 1, 1);
         jTableCounter.setValueAt("                  " + engine.Dec2Hex2digit(matrix.A) + engine.Dec2Hex2digit(matrix.F), 2, 1);
         jTableCounter.setValueAt("                  " + engine.Dec2Hex(matrix.PC), 3, 1);
+        MultiFormatRegisterInspector.refreshInspector();
         jTableCounter.setValueAt("                  " + matrix.clockCycleCounter, 4, 1);
         jTableCounter.setValueAt("                  " + matrix.instructionCounter, 5, 1);
 
@@ -3710,5 +3993,273 @@ public int find=0;
     private javax.swing.JTextField jTextFieldMemBegin;
     private javax.swing.JTextField jTextFieldMemStop;
     // End of variables declaration//GEN-END:variables
+
+    // --- Modern Enhancements: Dark Mode, Format Code & Syntax Linting ---
+    private javax.swing.JLabel lintStatusLabel;
+
+    public void updateLintStatus(java.util.List<SyntaxLinter.LintError> errors) {
+        if (lintStatusLabel == null) return;
+        if (errors == null || errors.isEmpty()) {
+            lintStatusLabel.setForeground(new java.awt.Color(0x4E, 0xC9, 0xB0));
+            lintStatusLabel.setText(" Syntax: Valid 8085 Assembly ");
+        } else {
+            lintStatusLabel.setForeground(new java.awt.Color(0xFF, 0x6B, 0x6B));
+            lintStatusLabel.setText(" " + errors.get(0).toString() + " ");
+        }
+    }
+
+    public void formatCodeAction() {
+        if (textEditor != null && textEditor.jTextPane1 != null) {
+            String currentCode = textEditor.jTextPane1.getText();
+            String formatted = CodeFormatter.formatCode(currentCode);
+            textEditor.jTextPane1.setText(formatted);
+            textEditor.colorEditor();
+            textEditor.runLinting();
+        }
+    }
+
+    public void styleTable(javax.swing.JTable table, boolean isDark, int col0Width, int col1Width, int defaultColWidth) {
+        if (table == null) return;
+        table.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table.setRowHeight(22);
+        table.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        if (table.getTableHeader() != null) {
+            table.getTableHeader().setPreferredSize(new java.awt.Dimension(table.getTableHeader().getPreferredSize().width, 22));
+        }
+        
+        javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer() {
+            { setHorizontalAlignment(javax.swing.SwingConstants.CENTER); }
+            @Override
+            public java.awt.Component getTableCellRendererComponent(javax.swing.JTable t, Object val, boolean sel, boolean focus, int r, int c) {
+                if (val instanceof String) {
+                    val = ((String) val).trim();
+                }
+                return super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+            }
+        };
+
+        javax.swing.table.DefaultTableCellRenderer leftRenderer = new javax.swing.table.DefaultTableCellRenderer() {
+            { setHorizontalAlignment(javax.swing.SwingConstants.LEFT); }
+            @Override
+            public java.awt.Component getTableCellRendererComponent(javax.swing.JTable t, Object val, boolean sel, boolean focus, int r, int c) {
+                if (val instanceof String) {
+                    val = ((String) val).trim();
+                }
+                return super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+            }
+        };
+
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            if (i == 0) {
+                table.getColumnModel().getColumn(i).setCellRenderer(leftRenderer);
+            } else {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+        }
+        
+        if (isDark) {
+            table.setBackground(new java.awt.Color(0x21, 0x22, 0x24));
+            table.setForeground(new java.awt.Color(0xE0, 0xE0, 0xE0));
+            table.setSelectionBackground(new java.awt.Color(0x00, 0x7A, 0xCC));
+            table.setSelectionForeground(java.awt.Color.WHITE);
+            table.setGridColor(new java.awt.Color(0x3E, 0x40, 0x42));
+            if (table.getTableHeader() != null) {
+                table.getTableHeader().setBackground(new java.awt.Color(0x2D, 0x2D, 0x2D));
+                table.getTableHeader().setForeground(new java.awt.Color(0xE0, 0xE0, 0xE0));
+                table.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+            }
+        } else {
+            java.awt.Color sysBg = javax.swing.UIManager.getColor("Table.background");
+            java.awt.Color sysFg = javax.swing.UIManager.getColor("Table.foreground");
+            table.setBackground(sysBg != null ? sysBg : java.awt.Color.WHITE);
+            table.setForeground(sysFg != null ? sysFg : java.awt.Color.BLACK);
+            table.setSelectionBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
+            table.setSelectionForeground(javax.swing.UIManager.getColor("Table.selectionForeground"));
+            table.setGridColor(java.awt.Color.LIGHT_GRAY);
+            if (table.getTableHeader() != null) {
+                table.getTableHeader().setBackground(javax.swing.UIManager.getColor("TableHeader.background"));
+                table.getTableHeader().setForeground(javax.swing.UIManager.getColor("TableHeader.foreground"));
+            }
+        }
+
+        javax.swing.table.TableColumnModel cm = table.getColumnModel();
+        for (int i = 0; i < cm.getColumnCount(); i++) {
+            javax.swing.table.TableColumn col = cm.getColumn(i);
+            col.setResizable(true);
+            if (i == 0 && col0Width > 0) {
+                col.setPreferredWidth(col0Width);
+            } else if (i == 1 && col1Width > 0) {
+                col.setPreferredWidth(col1Width);
+            } else if (defaultColWidth > 0) {
+                col.setPreferredWidth(defaultColWidth);
+            }
+        }
+
+        if (table.getParent() instanceof javax.swing.JViewport) {
+            javax.swing.JViewport vp = (javax.swing.JViewport) table.getParent();
+            if (vp.getParent() instanceof javax.swing.JScrollPane) {
+                javax.swing.JScrollPane sp = (javax.swing.JScrollPane) vp.getParent();
+                sp.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                sp.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+                
+                int tableHeaderH = table.getTableHeader() != null ? table.getTableHeader().getPreferredSize().height : 22;
+                int reqHeight = table.getRowCount() * table.getRowHeight() + tableHeaderH + 2;
+                sp.setPreferredSize(new java.awt.Dimension(sp.getPreferredSize().width, reqHeight));
+                sp.setMinimumSize(new java.awt.Dimension(sp.getMinimumSize().width, reqHeight));
+            }
+        }
+    }
+
+    public void styleAssemblerTable(boolean isDark) {
+        if (jTableAssembler == null) return;
+        jTableAssembler.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        jTableAssembler.setRowHeight(24);
+        jTableAssembler.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+
+        if (isDark) {
+            jTableAssembler.setBackground(new java.awt.Color(0x21, 0x22, 0x24));
+            jTableAssembler.setForeground(new java.awt.Color(0xE0, 0xE0, 0xE0));
+            jTableAssembler.setSelectionBackground(new java.awt.Color(0x00, 0x7A, 0xCC));
+            jTableAssembler.setSelectionForeground(java.awt.Color.WHITE);
+            jTableAssembler.setGridColor(new java.awt.Color(0x3E, 0x40, 0x42));
+            if (jTableAssembler.getTableHeader() != null) {
+                jTableAssembler.getTableHeader().setBackground(new java.awt.Color(0x2D, 0x2D, 0x2D));
+                jTableAssembler.getTableHeader().setForeground(new java.awt.Color(0xE0, 0xE0, 0xE0));
+                jTableAssembler.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+            }
+        } else {
+            jTableAssembler.setBackground(new java.awt.Color(176, 194, 158));
+            jTableAssembler.setForeground(java.awt.Color.BLACK);
+            jTableAssembler.setSelectionBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
+            jTableAssembler.setSelectionForeground(javax.swing.UIManager.getColor("Table.selectionForeground"));
+            if (jTableAssembler.getTableHeader() != null) {
+                jTableAssembler.getTableHeader().setBackground(javax.swing.UIManager.getColor("TableHeader.background"));
+                jTableAssembler.getTableHeader().setForeground(javax.swing.UIManager.getColor("TableHeader.foreground"));
+            }
+        }
+
+        if (jTableAssembler.getColumnModel().getColumnCount() >= 8) {
+            jTableAssembler.getColumnModel().getColumn(0).setPreferredWidth(30);  // *
+            jTableAssembler.getColumnModel().getColumn(1).setPreferredWidth(65);  // Address
+            jTableAssembler.getColumnModel().getColumn(2).setPreferredWidth(80);  // Label
+            jTableAssembler.getColumnModel().getColumn(3).setPreferredWidth(160); // Mnemonics
+            jTableAssembler.getColumnModel().getColumn(4).setPreferredWidth(75);  // Hexcode
+            jTableAssembler.getColumnModel().getColumn(5).setPreferredWidth(55);  // Bytes
+            jTableAssembler.getColumnModel().getColumn(6).setPreferredWidth(75);  // M-Cycles
+            jTableAssembler.getColumnModel().getColumn(7).setPreferredWidth(75);  // T-States
+        }
+    }
+
+    public void optimizeAllTables() {
+        boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
+        styleAssemblerTable(isDark);
+        styleTable(jTableRegister, isDark, 110, 50, 30);
+        styleTable(jTableFlagregister, isDark, 110, 50, 30);
+        styleTable(jTableCounter, isDark, 180, 100, 80);
+        styleTable(jTableInterrupt, isDark, 44, 44, 44);
+        styleTable(jTableRIM, isDark, 38, 38, 38);
+        styleTable(jTableSIM, isDark, 38, 38, 38);
+        styleTable(jTableNoConverter, isDark, 100, 100, 100);
+        styleTable(jTablePort, isDark, 100, 60, 60);
+        styleTable(jTable8255, isDark, 100, 60, 60);
+        styleTable(jTableMemory, isDark, 100, 60, 60);
+    }
+
+    public void applyTheme(String mode) {
+        try {
+            if ("dark".equalsIgnoreCase(mode)) {
+                com.formdev.flatlaf.FlatDarkLaf.setup();
+            } else if ("light".equalsIgnoreCase(mode)) {
+                com.formdev.flatlaf.FlatLightLaf.setup();
+            } else {
+                javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+            }
+
+            for (java.awt.Window w : java.awt.Window.getWindows()) {
+                javax.swing.SwingUtilities.updateComponentTreeUI(w);
+            }
+
+            if (textEditor != null && textEditor.jTextPane1 != null) {
+                boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
+                if (isDark) {
+                    textEditor.jTextPane1.setBackground(new java.awt.Color(0x1E, 0x1E, 0x1E));
+                    textEditor.jTextPane1.setCaretColor(java.awt.Color.WHITE);
+                } else {
+                    java.awt.Color sysBg = javax.swing.UIManager.getColor("TextPane.background");
+                    textEditor.jTextPane1.setBackground(sysBg != null ? sysBg : java.awt.Color.WHITE);
+                    textEditor.jTextPane1.setCaretColor(java.awt.Color.BLACK);
+                }
+                textEditor.colorEditor();
+            }
+
+            optimizeAllTables();
+            revalidate();
+            repaint();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void setupModernEnhancements() {
+        // 1. Add Theme menu to jMenuBar1
+        javax.swing.JMenu themeMenu = new javax.swing.JMenu("Theme");
+        
+        javax.swing.JMenuItem darkTheme = new javax.swing.JMenuItem("🌙 Flat Dark Mode");
+        darkTheme.addActionListener(e -> applyTheme("dark"));
+
+        javax.swing.JMenuItem lightTheme = new javax.swing.JMenuItem("☀️ Flat Light Mode");
+        lightTheme.addActionListener(e -> applyTheme("light"));
+
+        javax.swing.JMenuItem systemTheme = new javax.swing.JMenuItem("💻 System Default");
+        systemTheme.addActionListener(e -> applyTheme("system"));
+
+        themeMenu.add(darkTheme);
+        themeMenu.add(lightTheme);
+        themeMenu.add(systemTheme);
+        jMenuBar1.add(themeMenu);
+
+        // 2. Add Format Code and Memory Heatmap items under Tools menu (jMenu1)
+        javax.swing.JMenuItem formatItem = new javax.swing.JMenuItem("Format Code");
+        formatItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        formatItem.addActionListener(e -> formatCodeAction());
+
+        javax.swing.JMenuItem heatmapItem = new javax.swing.JMenuItem("🔥 Memory Heatmap & Visualizer");
+        heatmapItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        heatmapItem.addActionListener(e -> {
+            MemoryHeatmapVisualizer vis = MemoryHeatmapVisualizer.getInstance(matrix, this);
+            vis.setVisible(true);
+            vis.toFront();
+        });
+
+        javax.swing.JMenuItem regInspectorItem = new javax.swing.JMenuItem("📊 Multi-Format Register Inspector");
+        regInspectorItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        regInspectorItem.addActionListener(e -> {
+            MultiFormatRegisterInspector insp = MultiFormatRegisterInspector.getInstance(matrix, this);
+            insp.setVisible(true);
+            insp.toFront();
+        });
+
+        javax.swing.JMenuItem bpItem = new javax.swing.JMenuItem("⏸️ Conditional Breakpoints");
+        bpItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        bpItem.addActionListener(e -> {
+            ConditionalBreakpointManager mgr = ConditionalBreakpointManager.getInstance(matrix, this);
+            mgr.setVisible(true);
+            mgr.toFront();
+        });
+
+        jMenu1.addSeparator();
+        jMenu1.add(formatItem);
+        jMenu1.add(heatmapItem);
+        jMenu1.add(regInspectorItem);
+        jMenu1.add(bpItem);
+
+        // 3. Add Lint Status bar at bottom
+        lintStatusLabel = new javax.swing.JLabel(" Syntax: Ready ");
+        lintStatusLabel.setFont(new java.awt.Font("Monospaced", java.awt.Font.BOLD, 12));
+        lintStatusLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 8, 3, 8));
+        getContentPane().add(lintStatusLabel, java.awt.BorderLayout.SOUTH);
+        
+        applyTheme("dark");
+    }
 
 }

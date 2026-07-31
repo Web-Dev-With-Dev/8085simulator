@@ -1,1 +1,15 @@
 true
+MVI B, 05H      ; Load 05H into Register B
+MVI C, 03H      ; Load 03H into Register C
+MVI A, 00H      ; Clear Accumulator
+
+LOOP: 
+INR A           ; Increment Accumulator A
+DCR B           ; Decrement counter B
+JNZ LOOP        ; Loop until B becomes 0
+
+MVI A, FFH      ; ⏸️ TRIGGERS RULE 1: Loads 0xFF into Accumulator A (A == 0xFF)!
+
+STA 2050H       ; ⏸️ TRIGGERS RULE 2: Writes to Memory 2050H (Memory 2050H MODIFIED)!
+
+HLT             ; Stop execution
