@@ -305,9 +305,13 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         jMenuFile = new javax.swing.JMenu();
         jMenuItemLoad_Assembly_Language_code = new javax.swing.JMenuItem();
         jMenuItemLoad_Hexcode = new javax.swing.JMenuItem();
+        jMenuItemLoad_Raw_Binary = new javax.swing.JMenuItem();
+        jMenuItemImport_Documentation = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JSeparator();
         jMenuItemSave_Assembly_Language_code = new javax.swing.JMenuItem();
         jMenuItemSave_Hexcode = new javax.swing.JMenuItem();
+        jMenuItemSave_Raw_Binary = new javax.swing.JMenuItem();
+        jMenuItemExport_Documentation = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JSeparator();
         jMenuItem18 = new javax.swing.JMenuItem();
         jMenuItem19 = new javax.swing.JMenuItem();
@@ -1403,7 +1407,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
     jMenuFile.add(jMenuItemLoad_Assembly_Language_code);
 
     jMenuItemLoad_Hexcode.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.ALT_MASK));
-    jMenuItemLoad_Hexcode.setText("Load Hexcode/Disassembler");
+    jMenuItemLoad_Hexcode.setText("Load Intel HEX File (.hex)");
     jMenuItemLoad_Hexcode.setName("jMenuItemLoad_Hexcode"); // NOI18N
     jMenuItemLoad_Hexcode.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1411,6 +1415,24 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         }
     });
     jMenuFile.add(jMenuItemLoad_Hexcode);
+
+    jMenuItemLoad_Raw_Binary.setText("Load Raw Binary File (.bin)");
+    jMenuItemLoad_Raw_Binary.setName("jMenuItemLoad_Raw_Binary");
+    jMenuItemLoad_Raw_Binary.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItemLoad_Raw_BinaryActionPerformed(evt);
+        }
+    });
+    jMenuFile.add(jMenuItemLoad_Raw_Binary);
+
+    jMenuItemImport_Documentation.setText("Import Program Documentation (.docx, .doc, .txt)");
+    jMenuItemImport_Documentation.setName("jMenuItemImport_Documentation");
+    jMenuItemImport_Documentation.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItemImport_DocumentationActionPerformed(evt);
+        }
+    });
+    jMenuFile.add(jMenuItemImport_Documentation);
 
     jSeparator7.setName("jSeparator7"); // NOI18N
     jMenuFile.add(jSeparator7);
@@ -1426,7 +1448,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
     jMenuFile.add(jMenuItemSave_Assembly_Language_code);
 
     jMenuItemSave_Hexcode.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
-    jMenuItemSave_Hexcode.setText("Save Hexcode");
+    jMenuItemSave_Hexcode.setText("Save Intel HEX File (.hex)");
     jMenuItemSave_Hexcode.setName("jMenuItemSave_Hexcode"); // NOI18N
     jMenuItemSave_Hexcode.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1434,6 +1456,24 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         }
     });
     jMenuFile.add(jMenuItemSave_Hexcode);
+
+    jMenuItemSave_Raw_Binary.setText("Save Raw Binary File (.bin)");
+    jMenuItemSave_Raw_Binary.setName("jMenuItemSave_Raw_Binary");
+    jMenuItemSave_Raw_Binary.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItemSave_Raw_BinaryActionPerformed(evt);
+        }
+    });
+    jMenuFile.add(jMenuItemSave_Raw_Binary);
+
+    jMenuItemExport_Documentation.setText("Export Program Documentation (.docx, .doc, .txt)");
+    jMenuItemExport_Documentation.setName("jMenuItemExport_Documentation");
+    jMenuItemExport_Documentation.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItemExport_DocumentationActionPerformed(evt);
+        }
+    });
+    jMenuFile.add(jMenuItemExport_Documentation);
 
     jSeparator8.setName("jSeparator8"); // NOI18N
     jMenuFile.add(jSeparator8);
@@ -2680,9 +2720,39 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
             else jButtonAssembleActionPerformed(evt);
             
             if(fileChooser.objectNo==0)
-            fileChooser=new FileChooser("Save Hexcode", this);
+            fileChooser=new FileChooser("Save Intel HEX", this);
             fileChooser.setVisible(true);
    }//GEN-LAST:event_jMenuItemSave_HexcodeActionPerformed
+
+   private void jMenuItemLoad_Raw_BinaryActionPerformed(java.awt.event.ActionEvent evt) {
+        if(fileChooser.objectNo==0)
+        fileChooser=new FileChooser("Load Raw Binary", this);
+        fileChooser.setVisible(true);
+   }
+
+   private void jMenuItemSave_Raw_BinaryActionPerformed(java.awt.event.ActionEvent evt) {
+        if(jTabbedPaneAssemblerEditor.getSelectedIndex()==1)jButtonDisassembleActionPerformed(evt);
+        else jButtonAssembleActionPerformed(evt);
+        
+        if(fileChooser.objectNo==0)
+        fileChooser=new FileChooser("Save Raw Binary", this);
+        fileChooser.setVisible(true);
+   }
+
+   private void jMenuItemImport_DocumentationActionPerformed(java.awt.event.ActionEvent evt) {
+        if(fileChooser.objectNo==0)
+        fileChooser=new FileChooser("Import Documentation", this);
+        fileChooser.setVisible(true);
+   }
+
+   private void jMenuItemExport_DocumentationActionPerformed(java.awt.event.ActionEvent evt) {
+        if(jTabbedPaneAssemblerEditor.getSelectedIndex()==1)jButtonDisassembleActionPerformed(evt);
+        else jButtonAssembleActionPerformed(evt);
+        
+        if(fileChooser.objectNo==0)
+        fileChooser=new FileChooser("Export Documentation", this);
+        fileChooser.setVisible(true);
+   }
 
    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         jButtonStop.setText("Stop");
@@ -3703,10 +3773,14 @@ public int find=0;
     private javax.swing.JMenuItem jMenuItemInterruptServiceSubroutine;
     private javax.swing.JMenuItem jMenuItemLoad_Assembly_Language_code;
     private javax.swing.JMenuItem jMenuItemLoad_Hexcode;
+    private javax.swing.JMenuItem jMenuItemLoad_Raw_Binary;
+    private javax.swing.JMenuItem jMenuItemImport_Documentation;
     private javax.swing.JMenuItem jMenuItemRecover;
     private javax.swing.JMenuItem jMenuItemRunAllAtATime;
     private javax.swing.JMenuItem jMenuItemSave_Assembly_Language_code;
     private javax.swing.JMenuItem jMenuItemSave_Hexcode;
+    private javax.swing.JMenuItem jMenuItemSave_Raw_Binary;
+    private javax.swing.JMenuItem jMenuItemExport_Documentation;
     private javax.swing.JMenuItem jMenuItemStop;
     private javax.swing.JMenu jMenuSettings;
     private javax.swing.JPanel jPanel8255;

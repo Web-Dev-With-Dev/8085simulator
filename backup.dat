@@ -1,10 +1,2 @@
-true
-// -------------------------------------------------------------
-// Sample 8085 Assembly Program: Addition & Memory Storage
-// -------------------------------------------------------------
-MVI A, 05H      // Step 1: Load 05H into Accumulator A
-MVI B, 0AH      // Step 2: Load 0AH into Register B
-ADD B           // Step 3: Add B to A (A = 0FH)
-STA 2000H       // Step 4: Store A at Memory address 2000H
-INR A           // Step 5: Increment Accumulator (A = 10H)
-HLT             // Step 6: Halt CPU
+false
+

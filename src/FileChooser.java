@@ -29,11 +29,19 @@ public class FileChooser extends javax.swing.JFrame {
         jFileChooser1.setSelectedFile(file);
         jFileChooser1.setApproveButtonText(s);
         setTitle(s);
-        jFileChooser1.setApproveButtonMnemonic(s.charAt(0));
-        if(s.charAt(5)=='M')
-            fileFilter = new FileNameExtensionFilter("8085 Assembler Language Simulation module(.asm)", "asm");
-        else if(s.charAt(5)=='H')
-            fileFilter = new FileNameExtensionFilter("Hexcode(.hex)", "hex");
+        jFileChooser1.setApproveButtonMnemonic(s.length() > 0 ? s.charAt(0) : 'O');
+        
+        String lowerS = s.toLowerCase();
+        if (lowerS.contains("binary") || lowerS.contains("bin")) {
+            fileFilter = new FileNameExtensionFilter("Raw Binary File (.bin)", "bin");
+        } else if (lowerS.contains("hex")) {
+            fileFilter = new FileNameExtensionFilter("Intel HEX File (.hex)", "hex");
+        } else if (lowerS.contains("doc")) {
+            fileFilter = new FileNameExtensionFilter("Word Document / Code Text (.docx, .doc, .txt)", "docx", "doc", "txt");
+        } else {
+            fileFilter = new FileNameExtensionFilter("8085 Assembler Language (.asm)", "asm");
+        }
+        
         jFileChooser1.setFileFilter(fileFilter);
         jFileChooser1.setFileHidingEnabled(false);
         this.o=o;
@@ -91,8 +99,11 @@ public class FileChooser extends javax.swing.JFrame {
         {
             path=jFileChooser1.getSelectedFile().toString();
             o.path=path;
-        o.setTitle("8085 Simulator - "+o.path);
-            if(jFileChooser1.getApproveButtonText().equalsIgnoreCase("Load Mnemonics"))
+            o.setTitle("8085 Simulator - "+o.path);
+            File selectedFile = jFileChooser1.getSelectedFile();
+            String btnText = jFileChooser1.getApproveButtonText();
+
+            if(btnText.equalsIgnoreCase("Load Mnemonics"))
             {
                 String s = "", line;
                 try {
@@ -104,60 +115,101 @@ public class FileChooser extends javax.swing.JFrame {
                     o.textEditor.colorEditor();
                     in.close();
                 } catch (Exception e) {
-                                        Popup.show("Failed to load the file.");
+                    Popup.show("Failed to load the file.");
                 }
             }
-            else if(jFileChooser1.getApproveButtonText().equalsIgnoreCase("Save Mnemonics"))
+            else if(btnText.equalsIgnoreCase("Save Mnemonics"))
             {
                 try {
-                path=path.replace(".asm", "");
-                    
-                } catch (Exception e) {
-                }
-                  try {
+                    path=path.replace(".asm", "");
+                } catch (Exception e) {}
+                try {
                     PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path+".asm")));
-                      out.print(o.jTextAreaAssemblyLanguageEditor.getText());
+                    out.print(o.jTextAreaAssemblyLanguageEditor.getText());
                     out.close();
                 } catch (Exception e) {
                     Popup.show("Unable to save the file.");
                 }
             }
-            else if(jFileChooser1.getApproveButtonText().equalsIgnoreCase("Load Hexcode"))
+            else if(btnText.contains("Intel HEX") || btnText.equalsIgnoreCase("Load Hexcode"))
             {
-                try {
-                if (!path.contains("."))path=path+".hex";
-                    
-                } catch (Exception e) {
-                }
-                String s = "", line;
-                try {
-                    BufferedReader in = new BufferedReader(new FileReader(path));
+                if (!path.contains(".")) path = path + ".hex";
+                File f = new File(path);
+                boolean success = BinaryHexManager.importIntelHex(o, f);
+                // Also show in disassembler text view
+                try (BufferedReader in = new BufferedReader(new FileReader(f))) {
+                    StringBuilder sb = new StringBuilder();
+                    String line;
                     while ((line = in.readLine()) != null) {
-                        s = s + line + "\n";
+                        sb.append(line).append("\n");
                     }
-                    o.jTextAreaDisassembler.setText(s);
-                    in.close();
-                } catch (Exception e) {
-                        Popup.show("Failed to load the file.");
+                    o.jTextAreaDisassembler.setText(sb.toString());
+                } catch (Exception e) {}
+                if (!success) {
+                    Popup.show("Failed to load Intel HEX file.");
                 }
-
             }
-            else if(jFileChooser1.getApproveButtonText().equalsIgnoreCase("Save Hexcode"))
+            else if(btnText.contains("Save Intel HEX") || btnText.equalsIgnoreCase("Save Hexcode"))
             {
-                try {
-                path=path.replace(".hex", "");
-                    
-                } catch (Exception e) {
-                }
-                 try {
-                     PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path+".hex")));
-                        out.print(o.disassembler.saveDisassembler());
-                    out.close();
-                } catch (Exception e) {
-                    Popup.show("Unable to save the file.");
+                if (!path.contains(".")) path = path + ".hex";
+                File f = new File(path);
+                boolean success = BinaryHexManager.exportIntelHex(o, f, 0, -1);
+                if (!success) {
+                    Popup.show("Unable to save Intel HEX file.");
                 }
             }
-                    o.jTextAreaAssemblyLanguageEditor.select(0, 0);
+            else if(btnText.contains("Load Raw Binary") || btnText.contains("Load Binary"))
+            {
+                if (!path.contains(".")) path = path + ".bin";
+                File f = new File(path);
+                int startAddr = 0;
+                String addrInput = javax.swing.JOptionPane.showInputDialog(this, "Enter Start Memory Address (Hex or Dec):", "0000");
+                if (addrInput != null && !addrInput.trim().isEmpty()) {
+                    try {
+                        String clean = addrInput.trim();
+                        if (clean.toLowerCase().startsWith("0x")) {
+                            startAddr = Integer.parseInt(clean.substring(2), 16);
+                        } else if (clean.toLowerCase().endsWith("h")) {
+                            startAddr = Integer.parseInt(clean.substring(0, clean.length() - 1), 16);
+                        } else {
+                            startAddr = Integer.parseInt(clean, 16);
+                        }
+                    } catch (Exception ex) {
+                        startAddr = 0;
+                    }
+                }
+                boolean success = BinaryHexManager.importRawBinary(o, f, startAddr);
+                if (!success) {
+                    Popup.show("Failed to load raw binary file.");
+                }
+            }
+            else if(btnText.contains("Save Raw Binary") || btnText.contains("Save Binary"))
+            {
+                if (!path.contains(".")) path = path + ".bin";
+                File f = new File(path);
+                boolean success = BinaryHexManager.exportRawBinary(o, f, 0, -1);
+                if (!success) {
+                    Popup.show("Unable to save raw binary file.");
+                }
+            }
+            else if(btnText.contains("Import Documentation") || btnText.contains("Import Doc"))
+            {
+                File f = new File(path);
+                boolean success = BinaryHexManager.importDocumentation(o, f);
+                if (!success) {
+                    Popup.show("Failed to import documentation file.");
+                }
+            }
+            else if(btnText.contains("Export Documentation") || btnText.contains("Export Doc"))
+            {
+                if (!path.contains(".")) path = path + ".docx";
+                File f = new File(path);
+                boolean success = BinaryHexManager.exportDocumentationDoc(o, f);
+                if (!success) {
+                    Popup.show("Unable to export documentation.");
+                }
+            }
+            o.jTextAreaAssemblyLanguageEditor.select(0, 0);
 
             dispose();
             if(o.closeStateCall)System.exit(0);
