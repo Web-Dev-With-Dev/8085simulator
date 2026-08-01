@@ -1383,7 +1383,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
 
     jTabbedPaneEditor.addTab("Assembler", jInternalFrame5);
 
-    jLabel1.setText("Created by : Jubin Mitra");
+    jLabel1.setText("Created by : Aura Studio");
     jLabel1.setName("jLabel1"); // NOI18N
 
     jMenuBar1.setName("jMenuBar1"); // NOI18N
