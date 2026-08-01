@@ -1945,14 +1945,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
 
    private void jButtonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRunActionPerformed
 
-        if (continueFrom == 0) {
-            // Fresh start: full reset of all breakpoint edge-trigger state & hit counters
-            // Pass matrix so pre-existing conditions (e.g. A already 0xFF) don't fire immediately
-            ConditionalBreakpointManager.fullReset(matrix);
-        } else {
-            // Resuming after a PAUSE breakpoint: only reset edge-trigger (not hit counters)
-            ConditionalBreakpointManager.resetState(matrix);
-        }
+
         jButtonStop.setVisible(true);
         jButtonRun.setVisible(false);
         jButtonStep.setVisible(false);
@@ -1980,63 +1973,6 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                    matrix.functionRun(matrix.memory[matrix.PC]);
                    jProgressBar1.setIndeterminate(true);
 
-                   // ── Conditional Breakpoint check ───────────────
-                   ConditionalBreakpointManager.TriggeredResult bp =
-                       ConditionalBreakpointManager.checkBreakpoints(matrix);
-                   if (bp != null) {
-                       if (bp.postHitAction == ConditionalBreakpointManager.PostHitAction.PAUSE) {
-                           // Full pause: show continue panel
-                           if (handleBreakpointPause(bp)) break;
-                       } else if (bp.postHitAction == ConditionalBreakpointManager.PostHitAction.RUN_AFTER) {
-                           // Run All After: update status label, keep looping
-                           final String msg = bp.summary;
-                           final int   pc   = matrix.PC;
-                           SwingUtilities.invokeLater(() -> {
-                               set();
-                               if (lintStatusLabel != null)
-                                   lintStatusLabel.setText(" ▶ Breakpoint #" + bp.hitCount + " passed: "
-                                       + msg + "  PC=" + engine.Dec2Hex(pc) + "H — continuing… ");
-                               ConditionalBreakpointManager mgr =
-                                   ConditionalBreakpointManager.getInstance(matrix, Assembler.this);
-                               mgr.setStatus("Hit #" + bp.hitCount + ": " + msg, new java.awt.Color(0x4C, 0xC9, 0xF0));
-                           });
-                           // No break — execution continues smoothly
-                       } else { // RUN_AND_NOTIFY
-                           // Resume run + show a non-blocking toast
-                           final String msg = bp.summary;
-                           final int   pc   = matrix.PC;
-                           SwingUtilities.invokeLater(() -> {
-                               set();
-                               if (lintStatusLabel != null)
-                                   lintStatusLabel.setText(" 🔔 BP Hit #" + bp.hitCount + ": " + msg
-                                       + "  PC=" + engine.Dec2Hex(pc) + "H ");
-                               showBreakpointToast(msg, pc);
-                           });
-                           // No break — execution continues smoothly
-                       }
-                   }
-
-                   // ── Mnemonic breakpoint check (# marker) ───────
-                   for (int row = 0; row < jTableAssembler.getRowCount(); row++) {
-                       if (jTableAssembler.getValueAt(row, 0) != null)
-                           if (engine.convertToNum(jTableAssembler.getValueAt(row, 1).toString()) == matrix.PC)
-                               if (jTableAssembler.getValueAt(row, 0).toString().equalsIgnoreCase("#")) {
-                                   set();
-                                   jButtonStep.setVisible(false);
-                                   jButtonRun.setVisible(false);
-                                   jButtonForward.setVisible(true);
-                                   jButtonBackward.setVisible(true);
-                                   jButtonStop.setText("Stop");
-                                   jButtonStop.setVisible(true);
-                                   jLabelErrorHang.setVisible(false);
-                                   jButtonContinue.setVisible(true);
-                                   continueFrom = matrix.PC;
-                                   pause = true;
-                                   jTableAssembler.setRowSelectionAllowed(true);
-                                   jTableAssembler.changeSelection(row, 0, false, false);
-                               }
-                   }
-
                    if (speed[2] == 1) {
                        setResister();
                        if (matrix.clockCycleCounter % 10000 == 0) { set(); }
@@ -2053,22 +1989,6 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
            while ((!stop) && matrix.PC < matrix.stopAddress && (!pause)) {
                try {
                    for (int row = 0; row < jTableAssembler.getRowCount(); row++) {
-                       if (jTableAssembler.getValueAt(row, 0) != null)
-                           if (engine.convertToNum(jTableAssembler.getValueAt(row, 1).toString()) == matrix.PC)
-                               if (jTableAssembler.getValueAt(row, 0).toString().equalsIgnoreCase("#")) {
-                                   jButtonStep.setVisible(false);
-                                   jButtonRun.setVisible(false);
-                                   jButtonForward.setVisible(true);
-                                   jButtonBackward.setVisible(true);
-                                   jButtonStop.setVisible(true);
-                                   jButtonStop.setText("Stop");
-                                   jLabelErrorHang.setVisible(false);
-                                   jButtonContinue.setVisible(true);
-                                   continueFrom = matrix.PC;
-                                   jTableAssembler.setRowSelectionAllowed(true);
-                                   jTableAssembler.changeSelection(row, 0, false, false);
-                                   pause = true;
-                               }
                        jButtonForwardActionPerformed(null);
                        Thread.sleep((long) (speed[0] * 1000));
                    }
@@ -2103,71 +2023,83 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
 
    private void jButtonStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStepActionPerformed
 
-       jButtonStep.setVisible(false);
-       jButtonRun.setVisible(false);
-       jButtonForward.setVisible(true);
-       jButtonBackward.setVisible(true);
-       jButtonStop.setVisible(true);
-       jLabelErrorHang.setVisible(false);
-       stop=false;
-       matrix.PC=engine.Hex2Dec(engine.HexAutoCorrect4digit(jTextFieldBeginFrom.getText()));
+        jButtonStep.setVisible(false);
+        jButtonRun.setVisible(false);
+        jButtonForward.setVisible(true);
+        jButtonBackward.setVisible(true);
+        jButtonBackward.setEnabled(false);
+        jButtonStop.setVisible(true);
+        jLabelErrorHang.setVisible(false);
+        stop=false;
+        matrix.clearHistory();
+        matrix.PC=engine.Hex2Dec(engine.HexAutoCorrect4digit(jTextFieldBeginFrom.getText()));
 
-   }//GEN-LAST:event_jButtonStepActionPerformed
+    }//GEN-LAST:event_jButtonStepActionPerformed
 
-   private void jButtonStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStopActionPerformed
-     if(stop|| jButtonStop.getText().equalsIgnoreCase("Stop"))
-     {
-       matrix.select = 0;
-       jButtonForward.setVisible(false);
-       jButtonBackward.setVisible(false);
-       jButtonStop.setVisible(false);
-       jButtonRun.setVisible(true);
-       jButtonStep.setVisible(true);
-       jButtonContinue.setVisible(false);
-       jScrollPane12.setVisible(false);
-       jScrollPane12.setVisible(true);
-       jTabbedPaneAssemblerEditor.setVisible(false);
-       jTabbedPaneAssemblerEditor.setVisible(true);
-       continueFrom=0;
-       stop=true;
-       pause=false;
-       // Full stop: reset ALL breakpoint state including hit counters; pass matrix to pre-seed
-       ConditionalBreakpointManager.fullReset(matrix);
-       if (lintStatusLabel != null)
-           lintStatusLabel.setText(" ⏹ Stopped — Breakpoint state reset ");
-       File f=new File("cache");
-       deleteDir(f);
-     }
-     if(jButtonStop.getText().equalsIgnoreCase("Pause"))
-     {
-         pause = true;
-         jButtonForward.setVisible(true);
-         jButtonBackward.setVisible(true);
-         jButtonStop.setVisible(true);
-         jButtonContinue.setVisible(true);
-         jButtonRun.setVisible(false);
-         jButtonStep.setVisible(false);
-         jScrollPane12.setVisible(false);
-         jScrollPane12.setVisible(true);
-         jButtonStop.setText("Stop");
-     }
+    private void jButtonStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStopActionPerformed
+      if(stop|| jButtonStop.getText().equalsIgnoreCase("Stop"))
+      {
+        matrix.select = 0;
+        matrix.clearHistory();
+        jButtonForward.setVisible(false);
+        jButtonBackward.setVisible(false);
+        jButtonBackward.setEnabled(false);
+        jButtonStop.setVisible(false);
+        jButtonRun.setVisible(true);
+        jButtonStep.setVisible(true);
+        jButtonContinue.setVisible(false);
+        jScrollPane12.setVisible(false);
+        jScrollPane12.setVisible(true);
+        jTabbedPaneAssemblerEditor.setVisible(false);
+        jTabbedPaneAssemblerEditor.setVisible(true);
+        continueFrom=0;
+        stop=true;
+        pause=false;
+        if (lintStatusLabel != null)
+            lintStatusLabel.setText(" ⏹ Stopped ");
+        File f=new File("cache");
+        deleteDir(f);
+      }
+      if(jButtonStop.getText().equalsIgnoreCase("Pause"))
+      {
+          pause = true;
+          jButtonForward.setVisible(true);
+          jButtonBackward.setVisible(true);
+          jButtonBackward.setEnabled(matrix.getHistorySize() > 0);
+          jButtonStop.setVisible(true);
+          jButtonContinue.setVisible(true);
+          jButtonRun.setVisible(false);
+          jButtonStep.setVisible(false);
+          jScrollPane12.setVisible(false);
+          jScrollPane12.setVisible(true);
+          jButtonStop.setText("Stop");
+      }
 
-   }//GEN-LAST:event_jButtonStopActionPerformed
+    }//GEN-LAST:event_jButtonStopActionPerformed
 
-   private void jButtonBackwardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackwardActionPerformed
-      oIndex--;
-      matrix.readCopy(matrix);       
-       try{
-       if( matrix.select<1000)
-          if(jTableAssembler.getValueAt(matrix.select, 3)!=null)
-          {  jTableAssembler.setRowSelectionAllowed(true);
-             jTableAssembler.changeSelection(matrix.select, matrix.select, false, false);
-             jLabelError.setText(comments[matrix.select]);
-             jLabelComment.setText(matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString())));
-          }
-       }catch(Exception e){}
-        set();
-   }//GEN-LAST:event_jButtonBackwardActionPerformed
+    private void jButtonBackwardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackwardActionPerformed
+       if (matrix.getHistorySize() == 0) {
+           jButtonBackward.setEnabled(false);
+           return;
+       }
+       oIndex--;
+       matrix.readCopy(matrix);       
+       try {
+           if (matrix.select < 1000 && jTableAssembler.getValueAt(matrix.select, 3) != null) {
+               jTableAssembler.setRowSelectionAllowed(true);
+               jTableAssembler.changeSelection(matrix.select, matrix.select, false, false);
+               if (comments != null && matrix.select < comments.length) {
+                   jLabelError.setText(comments[matrix.select]);
+               }
+               jLabelComment.setText(matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString())));
+           }
+       } catch(Exception e){}
+       set();
+       jButtonBackward.setEnabled(matrix.getHistorySize() > 0);
+       if (lintStatusLabel != null) {
+           lintStatusLabel.setText(" ⏪ Stepped Backward to PC = " + engine.Dec2Hex(matrix.PC) + "H (History depth: " + matrix.getHistorySize() + " steps) ");
+       }
+    }//GEN-LAST:event_jButtonBackwardActionPerformed
 
    private void jRadioButtonShowAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonShowAllActionPerformed
         setMemory();
@@ -2577,14 +2509,6 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
        memShift =0;
         
       loadMnemonics();
-      /*for(int i=0,memShiftTemp=0;jTableAssembler.getValueAt(i, 4)!=null;i++)
-      {
-          try{
-              if(Integer.parseInt(jTableAssembler.getValueAt(i,1).toString())>0)
-                            memShiftTemp=engine.Hex2Dec(jTableAssembler.getValueAt(i,1).toString());
-              }catch(Exception e){}
-          matrix.memory[memShiftTemp]=engine.Hex2Dec(jTableAssembler.getValueAt(i, 4).toString());
-      }*/
       jTabbedPaneAssemblerEditor.setSelectedIndex(0);
       jButtonAssemble.setVisible(true);
       jButtonDisassemble.setVisible(false);
@@ -2674,42 +2598,6 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
        setMemory();
        jRadioButtonUsedMemoryLocationActionPerformed(evt);
        textEditor.colorEditor();
-       /*
-       jTabbedPaneEditor.setSelectedIndex(1);
-       jScrollPane16.setVisible(true);
-       jTabbedPaneLabelEditor.setVisible(false);
-       jTabbedPaneLabelEditor.setVisible(true);
-       jTabbedPaneLabelEditor.setVisible(false);
-       jTableAssembler.setRowSelectionAllowed(false);
-       jLabelErrorHang.setVisible(false);
-       jLabelComment.setVisible(false);
-       jLabelError.setVisible(false);
-       jMenuItemClearMemoryActionPerformed(evt);
-       jButtonStop.setText("Stop");
-       jButtonStop.doClick();
-
-       for(int i=0;i<65536;i++){matrix.memory[i]=0;matrix.label[i]="";}
-       setMemory();
-       for(int i=0;i<999;i++){
-           for(int j=0;j<8;j++)
-           jTableAssembler.setValueAt(null,i,j);
-       }
-       
-       String s=jTextAreaDisassembler.getText();
-       String temp="";
-       for(int i=0;i<s.length();i++)
-       {
-           if(engine.isHex(s.charAt(i)))temp=temp+s.charAt(i);
-       }s=temp;
-
-       for(int i=0;i<s.length();i+=2)
-       {
-           if((i+1)<s.length())
-           jTableAssembler.setValueAt(""+s.charAt(i)+s.charAt(i+1), i/2, 4);
-       }
-       disAssemble();
-       errorCheck();
-*/
    }//GEN-LAST:event_jButtonDisassembleActionPerformed
 
    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
@@ -2828,7 +2716,6 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                         jLabelErrorHang.setText("You have exceeded the memory range");
                         jLabelErrorHang.setVisible(true);
       }
-      //int select=matrix.PC-matrix.beginAddress;
       matrix.createCopy(matrix);
 
      oIndex++;
@@ -2857,9 +2744,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
          jButtonStop.doClick();
      }
      matrix.functionRun(matrix.memory[matrix.PC]);
-       matrix.functionRun(matrix.memory[matrix.PC]);
       set();      
-      handleBreakpointCheck();
     }//GEN-LAST:event_jButtonForwardActionPerformed
 
     /**
@@ -2885,116 +2770,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         return maxAddr;
     }
 
-    /**
-     * Handles a PAUSE-action breakpoint: pauses execution, shows the
-     * Continue panel, highlights the row, and shows a modal dialog.
-     * Returns true to signal the run loop should break.
-     */
-    public boolean handleBreakpointPause(ConditionalBreakpointManager.TriggeredResult bp) {
-        pause        = true;
-        continueFrom = matrix.PC;
-        final String ruleMsg  = bp.summary;
-        final int    currentPc = matrix.PC;
-        final int    hitNo     = bp.hitCount;
 
-        SwingUtilities.invokeLater(() -> {
-            set();
-            jProgressBar1.setVisible(false);
-            // Show step/continue panel — NOT Run/Step (those restart from beginning)
-            jButtonRun.setVisible(false);
-            jButtonStep.setVisible(false);
-            jButtonForward.setVisible(true);
-            jButtonBackward.setVisible(true);
-            jButtonContinue.setVisible(true);
-            jButtonStop.setVisible(true);
-            jButtonStop.setText("Stop");
-
-            // Highlight the paused instruction row in the assembler table
-            for (int r = 0; r < jTableAssembler.getRowCount(); r++) {
-                if (jTableAssembler.getValueAt(r, 1) != null) {
-                    try {
-                        if (engine.convertToNum(jTableAssembler.getValueAt(r, 1).toString()) == currentPc) {
-                            jTableAssembler.setRowSelectionAllowed(true);
-                            jTableAssembler.changeSelection(r, 0, false, false);
-                            break;
-                        }
-                    } catch (Exception ex) {}
-                }
-            }
-
-            if (lintStatusLabel != null) {
-                lintStatusLabel.setText(" ⏸️ Breakpoint #" + hitNo + " Hit: "
-                    + ruleMsg + "  |  PC = " + engine.Dec2Hex(currentPc)
-                    + "H  |  Press Continue ▶ to resume Run-All ");
-            }
-
-            // Update manager status badge
-            ConditionalBreakpointManager.getInstance(matrix, Assembler.this)
-                .setStatus("Paused at #" + hitNo + ": " + ruleMsg, new java.awt.Color(0xFF, 0xC1, 0x07));
-
-            // Non-blocking modal (fires after EDT processes layout)
-            javax.swing.Timer dlgTimer = new javax.swing.Timer(60, ev -> {
-                javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "Conditional Breakpoint Triggered!\n"
-                    + "Rule  : " + ruleMsg + "\n"
-                    + "PC    : " + engine.Dec2Hex(currentPc) + "H\n"
-                    + "Hit # : " + hitNo + "\n\n"
-                    + "Press \"Continue\" to resume Run-All-At-Once\n"
-                    + "or \"Step\" (Forward/Backward) to single-step.",
-                    "⏸️ Breakpoint Hit",
-                    javax.swing.JOptionPane.WARNING_MESSAGE);
-            });
-            dlgTimer.setRepeats(false);
-            dlgTimer.start();
-        });
-        return true;  // signal run() to break the loop
-    }
-
-    /**
-     * Shows a small non-blocking toast notification for RUN_AND_NOTIFY breakpoints.
-     */
-    public void showBreakpointToast(String ruleMsg, int pc) {
-        JWindow toast = new JWindow(this);
-        toast.setAlwaysOnTop(true);
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(new java.awt.Color(0x1A, 0x3A, 0x5A));
-        panel.setBorder(BorderFactory.createLineBorder(new java.awt.Color(0x4C, 0xC9, 0xF0), 2, true));
-        JLabel lbl = new JLabel("  🔔 BP: " + ruleMsg + "  PC=" + engine.Dec2Hex(pc) + "H  ");
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lbl.setForeground(new java.awt.Color(0x4C, 0xC9, 0xF0));
-        lbl.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
-        panel.add(lbl);
-        toast.add(panel);
-        toast.pack();
-        // Position at top-right of assembler window
-        java.awt.Point loc = getLocationOnScreen();
-        toast.setLocation(loc.x + getWidth() - toast.getWidth() - 20, loc.y + 60);
-        toast.setVisible(true);
-        // Auto-dismiss after 2.5 seconds
-        javax.swing.Timer dismissTimer = new javax.swing.Timer(2500, e -> toast.dispose());
-        dismissTimer.setRepeats(false);
-        dismissTimer.start();
-    }
-
-    /** Legacy: used by jButtonForward (step-mode) — checks breakpoint and pauses if PAUSE action */
-    public boolean handleBreakpointCheck() {
-        ConditionalBreakpointManager.TriggeredResult bp =
-            ConditionalBreakpointManager.checkBreakpoints(matrix);
-        if (bp == null) return false;
-        if (bp.postHitAction == ConditionalBreakpointManager.PostHitAction.PAUSE) {
-            return handleBreakpointPause(bp);
-        } else if (bp.postHitAction == ConditionalBreakpointManager.PostHitAction.RUN_AND_NOTIFY) {
-            SwingUtilities.invokeLater(() -> showBreakpointToast(bp.summary, matrix.PC));
-        } else {
-            // RUN_AFTER: in step mode, just flash status
-            if (lintStatusLabel != null)
-                SwingUtilities.invokeLater(() ->
-                    lintStatusLabel.setText(" ▶ BP passed: " + bp.summary
-                        + "  PC=" + engine.Dec2Hex(matrix.PC) + "H "));
-        }
-        return false;
-    }
 
    private void jTextFieldBeginFromKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldBeginFromKeyReleased
       matrix.PC=engine.Hex2Dec(engine.HexAutoCorrect4digit(jTextFieldBeginFrom.getText()));
@@ -3105,9 +2881,6 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
    private void jButtonContinueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonContinueActionPerformed
 
        continueFrom = matrix.PC;
-       // Reset edge-trigger state so same condition can re-fire after continuing;
-       // pass matrix to pre-seed so we don't immediately re-trigger on the same state
-       ConditionalBreakpointManager.resetState(matrix);
        jButtonForward.setVisible(false);
        jButtonBackward.setVisible(false);
        jButtonStop.setText("Pause");
@@ -4239,19 +4012,10 @@ public int find=0;
             insp.toFront();
         });
 
-        javax.swing.JMenuItem bpItem = new javax.swing.JMenuItem("⏸️ Conditional Breakpoints");
-        bpItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
-        bpItem.addActionListener(e -> {
-            ConditionalBreakpointManager mgr = ConditionalBreakpointManager.getInstance(matrix, this);
-            mgr.setVisible(true);
-            mgr.toFront();
-        });
-
         jMenu1.addSeparator();
         jMenu1.add(formatItem);
         jMenu1.add(heatmapItem);
         jMenu1.add(regInspectorItem);
-        jMenu1.add(bpItem);
 
         // 3. Add Lint Status bar at bottom
         lintStatusLabel = new javax.swing.JLabel(" Syntax: Ready ");

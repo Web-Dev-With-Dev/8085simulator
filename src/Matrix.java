@@ -809,84 +809,97 @@ public class Matrix {
     }
 
 
-    public void createCopy(Matrix x)
-    {
-        try {
-                    File f=new File("cache");
-                    f.mkdir();
-                    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("cache"+o.fileSeparator+o.oIndex+".tmp")));
-                    out.println(x.A);out.println(x.F);
-                    out.println(x.B);out.println(x.C);
-                    out.println(x.D);out.println(x.E);
-                    out.println(x.H);out.println(x.L);
-                    out.println(x.SP);out.println(x.PC);
-                    out.println(x.D1);
-                    out.println(x.clockCycleCounter);out.println(x.instructionCounter);
-                    out.println(x.SOD);out.println(x.SDE);out.println(x.SID);out.println(x.R75);out.println(x.R65);out.println(x.R55);out.println(x.MSE);out.println(x.M75);out.println(x.M65);out.println(x.M55);out.println(x.IE);out.println(x.INTR);out.println(x._INTA);out.println(x.TRAP);
-                    out.println(x.beginAddress);out.println(x.stopAddress);
-                    for(int i=0;i<65536;i++)
-                    {
-                    out.println(x.memory[i]);
-                    out.println(x.label[i]);
-                    }
-                    for(int i=0;i<256;i++)
-                    {
-                        out.println(x.port[i]);
-                    }
-                    out.println(x.select);
-                    out.close();
-                } catch (Exception e) {
-                    Popup.show("Unable to create backward step instances.");
-                }
+    public static class ExecutionState {
+        int A, B, C, D, E, F, H, L, SP, PC, D1;
+        int SOD, SDE, SID, R75, R65, R55, MSE, RR75, M75, M65, M55, IE, INTR, _INTA, TRAP, HOLD, _HOLDA, _RESETIN, RESETOUT, IO_M, _RD, _WR;
+        long clockCycleCounter, instructionCounter;
+        int select;
+        int beginAddress, stopAddress;
+        int[] memory;
+        int[] port;
+        String[] label;
 
-        /*Matrix m=new Matrix(o);
-        m.A=x.A;m.F=x.F;
-        m.B=x.B;m.C=x.C;
-        m.D=x.D;m.E=x.E;
-        m.H=x.H;m.L=x.L;
-        m.SP=x.SP;
-        m.PC=x.PC;m.clockCycleCounter=x.clockCycleCounter;m.instructionCounter=x.instructionCounter;
-        m.SOD=x.SOD;m.SDE=x.SDE;m.SID=x.SID;m.R75=x.R75;m.R65=x.R65;m.R55=x.R55;m.MSE=x.MSE;m.M75=x.M75;m.M65=x.M65;m.M55=x.M55;m.IE=x.IE;m.INTR=x.INTR;m.INTA=x.INTA;m.TRAP=x.TRAP;
-        m.beginAddress=x.beginAddress;m.stopAddress=x.stopAddress;
-        for(int i=0;i<65536;i++)
-        {
-            m.memory[i]=x.memory[i];
-            m.label[i]=x.label[i];
+        public ExecutionState(Matrix x) {
+            this.A = x.A; this.F = x.F;
+            this.B = x.B; this.C = x.C;
+            this.D = x.D; this.E = x.E;
+            this.H = x.H; this.L = x.L;
+            this.SP = x.SP; this.PC = x.PC;
+            this.D1 = x.D1;
+            this.clockCycleCounter = x.clockCycleCounter;
+            this.instructionCounter = x.instructionCounter;
+            this.SOD = x.SOD; this.SDE = x.SDE; this.SID = x.SID;
+            this.R75 = x.R75; this.R65 = x.R65; this.R55 = x.R55;
+            this.MSE = x.MSE; this.RR75 = x.RR75; this.M75 = x.M75;
+            this.M65 = x.M65; this.M55 = x.M55; this.IE = x.IE;
+            this.INTR = x.INTR; this._INTA = x._INTA; this.TRAP = x.TRAP;
+            this.HOLD = x.HOLD; this._HOLDA = x._HOLDA; this._RESETIN = x._RESETIN;
+            this.RESETOUT = x.RESETOUT; this.IO_M = x.IO_M; this._RD = x._RD; this._WR = x._WR;
+            this.beginAddress = x.beginAddress;
+            this.stopAddress = x.stopAddress;
+            this.select = x.select;
+
+            this.memory = new int[65536];
+            System.arraycopy(x.memory, 0, this.memory, 0, 65536);
+            this.port = new int[256];
+            System.arraycopy(x.port, 0, this.port, 0, 256);
+            this.label = new String[65536];
+            System.arraycopy(x.label, 0, this.label, 0, 65536);
         }
-        for(int i=0;i<256;i++)
-        {
-            m.port[i]=x.port[i];
+
+        public void restoreTo(Matrix x) {
+            x.A = this.A; x.F = this.F;
+            x.B = this.B; x.C = this.C;
+            x.D = this.D; x.E = this.E;
+            x.H = this.H; x.L = this.L;
+            x.SP = this.SP; x.PC = this.PC;
+            x.D1 = this.D1;
+            x.clockCycleCounter = this.clockCycleCounter;
+            x.instructionCounter = this.instructionCounter;
+            x.SOD = this.SOD; x.SDE = this.SDE; x.SID = this.SID;
+            x.R75 = this.R75; x.R65 = this.R65; x.R55 = this.R55;
+            x.MSE = this.MSE; x.RR75 = this.RR75; x.M75 = this.M75;
+            x.M65 = this.M65; x.M55 = this.M55; x.IE = this.IE;
+            x.INTR = this.INTR; x._INTA = this._INTA; x.TRAP = this.TRAP;
+            x.HOLD = this.HOLD; x._HOLDA = this._HOLDA; x._RESETIN = this._RESETIN;
+            x.RESETOUT = this.RESETOUT; x.IO_M = this.IO_M; x._RD = this._RD; x._WR = this._WR;
+            x.beginAddress = this.beginAddress;
+            x.stopAddress = this.stopAddress;
+            x.select = this.select;
+
+            System.arraycopy(this.memory, 0, x.memory, 0, 65536);
+            System.arraycopy(this.port, 0, x.port, 0, 256);
+            System.arraycopy(this.label, 0, x.label, 0, 65536);
         }
-        return m;*/
     }
 
-    public void readCopy(Matrix x)
-    {
-        try {
-                    BufferedReader in=new BufferedReader(new FileReader("cache"+o.fileSeparator+o.oIndex+".tmp"));
-                    x.A=Integer.parseInt(in.readLine());x.F=Integer.parseInt(in.readLine());
-                    x.B=Integer.parseInt(in.readLine());x.C=Integer.parseInt(in.readLine());
-                    x.D=Integer.parseInt(in.readLine());x.E=Integer.parseInt(in.readLine());
-                    x.H=Integer.parseInt(in.readLine());x.L=Integer.parseInt(in.readLine());
-                    x.SP=Integer.parseInt(in.readLine());x.PC=Integer.parseInt(in.readLine());
-                    x.D1=Integer.parseInt(in.readLine());
-                    x.clockCycleCounter=Integer.parseInt(in.readLine());x.instructionCounter=Integer.parseInt(in.readLine());
-                    x.SOD=Integer.parseInt(in.readLine());x.SDE=Integer.parseInt(in.readLine());x.SID=Integer.parseInt(in.readLine());x.R75=Integer.parseInt(in.readLine());x.R65=Integer.parseInt(in.readLine());x.R55=Integer.parseInt(in.readLine());x.MSE=Integer.parseInt(in.readLine());x.M75=Integer.parseInt(in.readLine());x.M65=Integer.parseInt(in.readLine());x.M55=Integer.parseInt(in.readLine());x.IE=Integer.parseInt(in.readLine());x.INTR=Integer.parseInt(in.readLine());x._INTA=Integer.parseInt(in.readLine());x.TRAP=Integer.parseInt(in.readLine());
-                    x.beginAddress=Integer.parseInt(in.readLine());x.stopAddress=Integer.parseInt(in.readLine());
-                    for(int i=0;i<65536;i++)
-                    {
-                    x.memory[i]=Integer.parseInt(in.readLine());
-                    x.label[i]=in.readLine();
-                    }
-                    for(int i=0;i<256;i++)
-                    {
-                        x.port[i]=Integer.parseInt(in.readLine());
-                    }
-                    x.select=Integer.parseInt(in.readLine());
-                    in.close();
-                } catch (Exception e) {
-                    o.jButtonBackward.setEnabled(false);
-                }
+    private final java.util.Stack<ExecutionState> historyStack = new java.util.Stack<>();
+    public static final int MAX_HISTORY_DEPTH = 5000;
+
+    public void createCopy(Matrix x) {
+        if (historyStack.size() >= MAX_HISTORY_DEPTH) {
+            historyStack.remove(0);
+        }
+        historyStack.push(new ExecutionState(x));
+    }
+
+    public void readCopy(Matrix x) {
+        if (!historyStack.isEmpty()) {
+            ExecutionState state = historyStack.pop();
+            state.restoreTo(x);
+        } else {
+            if (o != null && o.jButtonBackward != null) {
+                o.jButtonBackward.setEnabled(false);
+            }
+        }
+    }
+
+    public void clearHistory() {
+        historyStack.clear();
+    }
+
+    public int getHistorySize() {
+        return historyStack.size();
     }
     public void functionRun(int index)
     {
