@@ -61,9 +61,9 @@ public class About extends JFrame
     appVersionLabel.setText("2.0");
 
     vendorLabel.setFont(vendorLabel.getFont().deriveFont(vendorLabel.getFont().getStyle() | 0x1));
-    vendorLabel.setText("Created by : ");
+    vendorLabel.setText("");
 
-    appVersionLabel1.setText("Aura Studio");
+    appVersionLabel1.setText("");
 
     vendorLabel1.setFont(vendorLabel1.getFont().deriveFont(vendorLabel1.getFont().getStyle() | 0x1));
     vendorLabel1.setText("Contact : ");

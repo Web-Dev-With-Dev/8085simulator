@@ -38,6 +38,8 @@ public class FileChooser extends javax.swing.JFrame {
             fileFilter = new FileNameExtensionFilter("Intel HEX File (.hex)", "hex");
         } else if (lowerS.contains("doc")) {
             fileFilter = new FileNameExtensionFilter("Word Document / Code Text (.docx, .doc, .txt)", "docx", "doc", "txt");
+        } else if (lowerS.contains("c code") || lowerS.contains("c file") || lowerS.endsWith(".c")) {
+            fileFilter = new FileNameExtensionFilter("C Source Code (.c)", "c");
         } else {
             fileFilter = new FileNameExtensionFilter("8085 Assembler Language (.asm)", "asm");
         }
@@ -207,6 +209,17 @@ public class FileChooser extends javax.swing.JFrame {
                 boolean success = BinaryHexManager.exportDocumentationDoc(o, f);
                 if (!success) {
                     Popup.show("Unable to export documentation.");
+                }
+            }
+            else if(btnText.contains("Export to C Code") || btnText.contains("Save C File"))
+            {
+                if (!path.contains(".")) path = path + ".c";
+                File f = new File(path);
+                String cCode = AssemblyToCConverter.convertToC(o.jTextAreaAssemblyLanguageEditor.getText());
+                try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f)))) {
+                    out.print(cCode);
+                } catch (Exception ex) {
+                    Popup.show("Unable to export C code file.");
                 }
             }
             o.jTextAreaAssemblyLanguageEditor.select(0, 0);

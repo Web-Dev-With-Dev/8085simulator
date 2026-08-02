@@ -163,6 +163,12 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
             if (is == null) {
                 is = Assembler.class.getResourceAsStream("8085 Program/" + progName + ".asm");
             }
+            if (is == null) {
+                is = Thread.currentThread().getContextClassLoader().getResourceAsStream("8085 Program/" + progName + ".asm");
+            }
+            if (is == null) {
+                is = Assembler.class.getClassLoader().getResourceAsStream("8085 Program/" + progName + ".asm");
+            }
             if (is != null) {
                 in = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             } else {
@@ -312,6 +318,8 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         jMenuItemSave_Hexcode = new javax.swing.JMenuItem();
         jMenuItemSave_Raw_Binary = new javax.swing.JMenuItem();
         jMenuItemExport_Documentation = new javax.swing.JMenuItem();
+        jMenuItemExport_C_Code = new javax.swing.JMenuItem();
+        jMenuItemCodeToCConverter = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JSeparator();
         jMenuItem18 = new javax.swing.JMenuItem();
         jMenuItem19 = new javax.swing.JMenuItem();
@@ -1387,7 +1395,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
 
     jTabbedPaneEditor.addTab("Assembler", jInternalFrame5);
 
-    jLabel1.setText("Created by : Aura Studio");
+    jLabel1.setText("");
     jLabel1.setName("jLabel1"); // NOI18N
 
     jMenuBar1.setName("jMenuBar1"); // NOI18N
@@ -1474,6 +1482,24 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         }
     });
     jMenuFile.add(jMenuItemExport_Documentation);
+
+    jMenuItemExport_C_Code.setText("Export to C Code (.c)");
+    jMenuItemExport_C_Code.setName("jMenuItemExport_C_Code");
+    jMenuItemExport_C_Code.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItemExport_C_CodeActionPerformed(evt);
+        }
+    });
+    jMenuFile.add(jMenuItemExport_C_Code);
+
+    jMenuItemCodeToCConverter.setText("Code to C Converter...");
+    jMenuItemCodeToCConverter.setName("jMenuItemCodeToCConverter");
+    jMenuItemCodeToCConverter.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItemCodeToCConverterActionPerformed(evt);
+        }
+    });
+    jMenuFile.add(jMenuItemCodeToCConverter);
 
     jSeparator8.setName("jSeparator8"); // NOI18N
     jMenuFile.add(jSeparator8);
@@ -2754,6 +2780,20 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         fileChooser.setVisible(true);
    }
 
+   private void jMenuItemExport_C_CodeActionPerformed(java.awt.event.ActionEvent evt) {
+        if(jTabbedPaneAssemblerEditor.getSelectedIndex()==1)jButtonDisassembleActionPerformed(evt);
+        else jButtonAssembleActionPerformed(evt);
+        
+        if(fileChooser.objectNo==0)
+        fileChooser=new FileChooser("Export to C Code", this);
+        fileChooser.setVisible(true);
+   }
+
+   private void jMenuItemCodeToCConverterActionPerformed(java.awt.event.ActionEvent evt) {
+        AssemblyToCDialog dialog = new AssemblyToCDialog(this);
+        dialog.setVisible(true);
+   }
+
    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         jButtonStop.setText("Stop");
         jButtonStop.doClick();
@@ -2799,9 +2839,11 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                    jTableAssembler.changeSelection(matrix.select, matrix.select, false, false);
                    jLabelError.setForeground(Color.BLUE);
                    jLabelError.setVisible(true);
-                   jLabelError.setText("<html>"+comments[matrix.select]+"</html>");
+                   jLabelComment.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                   jLabelComment.setForeground(new Color(13, 110, 253));
                    jLabelComment.setVisible(true);
-                   jLabelComment.setText("<html>"+matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString()))+"</html>");
+                   String stepExpl = matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString()));
+                   jLabelComment.setText("<html><b>💡 Step Explainer:</b> " + stepExpl + "</html>");
                    matrix.select=matrix.select+Integer.parseInt(jTableAssembler.getValueAt(matrix.select, 5).toString().trim());
                    break loop;
               }
@@ -3781,6 +3823,8 @@ public int find=0;
     private javax.swing.JMenuItem jMenuItemSave_Hexcode;
     private javax.swing.JMenuItem jMenuItemSave_Raw_Binary;
     private javax.swing.JMenuItem jMenuItemExport_Documentation;
+    private javax.swing.JMenuItem jMenuItemExport_C_Code;
+    private javax.swing.JMenuItem jMenuItemCodeToCConverter;
     private javax.swing.JMenuItem jMenuItemStop;
     private javax.swing.JMenu jMenuSettings;
     private javax.swing.JPanel jPanel8255;
