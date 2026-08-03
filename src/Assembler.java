@@ -2628,7 +2628,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                     s=engine.MnemonicToHexcode(jTableAssembler.getValueAt(i, 3).toString());
                     funcNo=Integer.parseInt(s[3].trim());
                     if(s[0].equalsIgnoreCase("NOP")){jTableAssembler.setValueAt("X",i,0);}
-                    else jTableAssembler.setValueAt("",i,0);
+                    else jTableAssembler.setValueAt("v",i,0);
 
                     try{
                         if(Integer.parseInt(jTableAssembler.getValueAt(i,1).toString())>0)
@@ -3462,7 +3462,7 @@ public int find=0;
             x=engine.getBytesFromMnemonics(temp);
             value="";
             if(engine.S[index].equalsIgnoreCase("NOP")){jTableAssembler.setValueAt("X",i,0);}
-            else jTableAssembler.setValueAt("",i,0);
+            else jTableAssembler.setValueAt("v",i,0);
 
             jTableAssembler.setValueAt("       "+engine.I[index][0],i,5);
             jTableAssembler.setValueAt("        "+engine.I[index][1],i,6);
