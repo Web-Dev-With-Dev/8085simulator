@@ -23,6 +23,11 @@ public class MultiFormatRegisterInspector extends JFrame {
     private JLabel lblFlagsBreakdown;
     private Timer refreshTimer;
 
+    private JPanel topPanel;
+    private JPanel bottomPanel;
+    private JLabel titleLabel;
+    private JLabel infoNote;
+
     // Register Names
     private static final String[] REG_NAMES = {
         "Accumulator (A)",
@@ -50,7 +55,6 @@ public class MultiFormatRegisterInspector extends JFrame {
         setSize(850, 520);
         setLocationRelativeTo(assembler);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout());
 
         initComponents();
         updateValues();
@@ -77,15 +81,83 @@ public class MultiFormatRegisterInspector extends JFrame {
         }
     }
 
-    private void initComponents() {
-        // --- TOP TOOLBAR ---
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
-        topPanel.setBackground(new Color(0x25, 0x25, 0x26));
-        topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0x3E, 0x3E, 0x42)));
+    public void updateThemeColors() {
+        if (topPanel == null || table == null || bottomPanel == null) return;
+        boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
 
-        JLabel titleLabel = new JLabel(" Real-Time Multi-Format Register & Memory Inspector");
+        Color bgTop    = isDark ? new Color(0x25, 0x25, 0x28) : new Color(0xF1, 0xF5, 0xF9);
+        Color borderC  = isDark ? new Color(0x3E, 0x40, 0x45) : new Color(0xCB, 0xD5, 0xE1);
+        Color titleFg  = isDark ? new Color(0x00, 0xA8, 0xFF) : new Color(0x02, 0x84, 0xC7);
+
+        Color tableBg  = isDark ? new Color(0x1D, 0x1E, 0x23) : new Color(0xFF, 0xFF, 0xFF);
+        Color tableFg  = isDark ? new Color(0xF0, 0xF0, 0xF0) : new Color(0x0F, 0x17, 0x2A);
+        Color gridColor= isDark ? new Color(0x36, 0x38, 0x42) : new Color(0xCB, 0xD5, 0xE1);
+        Color selBg    = isDark ? new Color(0x3E, 0x44, 0x52) : new Color(0x25, 0x63, 0xEB);
+
+        Color headerBg = isDark ? new Color(0x28, 0x2A, 0x36) : new Color(0xE2, 0xE8, 0xF0);
+        Color headerFg = isDark ? new Color(0xFF, 0xB7, 0x4D) : new Color(0xC2, 0x41, 0x0C);
+
+        topPanel.setBackground(bgTop);
+        topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderC));
+        titleLabel.setForeground(titleFg);
+
+        table.setBackground(tableBg);
+        table.setForeground(tableFg);
+        table.setGridColor(gridColor);
+        table.setSelectionBackground(selBg);
+        table.setSelectionForeground(Color.WHITE);
+
+        if (table.getTableHeader() != null) {
+            javax.swing.table.JTableHeader header = table.getTableHeader();
+            header.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            header.setBackground(headerBg);
+            header.setForeground(headerFg);
+            header.setPreferredSize(new Dimension(header.getPreferredSize().width, 28));
+
+            header.setDefaultRenderer(new DefaultTableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean focus, int r, int c) {
+                    JLabel l = (JLabel) super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+                    l.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                    l.setBackground(headerBg);
+                    l.setForeground(headerFg);
+                    l.setHorizontalAlignment(SwingConstants.CENTER);
+                    l.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, 1, gridColor),
+                        BorderFactory.createEmptyBorder(3, 4, 3, 4)
+                    ));
+                    return l;
+                }
+            });
+        }
+
+        bottomPanel.setBackground(bgTop);
+        bottomPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, borderC),
+                BorderFactory.createEmptyBorder(8, 12, 8, 12)
+        ));
+
+        lblFlagsBreakdown.setForeground(isDark ? new Color(0x00, 0xE6, 0x76) : new Color(0x15, 0x80, 0x3D));
+        if (infoNote != null) {
+            infoNote.setForeground(isDark ? new Color(0xAA, 0xAA, 0xAA) : new Color(0x47, 0x55, 0x69));
+        }
+        table.repaint();
+    }
+
+    private void initComponents() {
+        JPanel mainPanel = new JPanel(new BorderLayout()) {
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                updateThemeColors();
+            }
+        };
+        setContentPane(mainPanel);
+
+        // --- TOP TOOLBAR ---
+        topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        titleLabel = new JLabel(" Real-Time Multi-Format Register & Memory Inspector");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        titleLabel.setForeground(new Color(0x00, 0xA8, 0xFF));
         topPanel.add(titleLabel);
 
         JButton btnRefresh = new JButton(" Sync Now");
@@ -93,7 +165,7 @@ public class MultiFormatRegisterInspector extends JFrame {
         btnRefresh.addActionListener(e -> updateValues());
         topPanel.add(btnRefresh);
 
-        add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
 
         // --- TABLE ---
         String[] colNames = {"Register", "Hexadecimal", "Decimal (Unsigned)", "Decimal (Signed)", "Binary (4-Bit Groups)", "ASCII Char"};
@@ -107,34 +179,52 @@ public class MultiFormatRegisterInspector extends JFrame {
         table = new JTable(tableModel);
         table.setRowHeight(26);
         table.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        table.setBackground(new Color(0x21, 0x22, 0x24));
-        table.setForeground(new Color(0xE0, 0xE0, 0xE0));
-        table.setGridColor(new Color(0x3E, 0x40, 0x42));
-        table.setSelectionBackground(new Color(0x00, 0x7A, 0xCC));
-        table.setSelectionForeground(Color.WHITE);
-
-        if (table.getTableHeader() != null) {
-            table.getTableHeader().setBackground(new Color(0x2D, 0x2D, 0x2D));
-            table.getTableHeader().setForeground(new Color(0xE0, 0xE0, 0xE0));
-            table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
-            table.getTableHeader().setPreferredSize(new Dimension(table.getTableHeader().getPreferredSize().width, 28));
-        }
+        table.setShowGrid(true);
 
         // Custom Cell Renderers
-        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-        leftRenderer.setHorizontalAlignment(SwingConstants.LEFT);
+        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean focus, int r, int c) {
+                JLabel comp = (JLabel) super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+                comp.setHorizontalAlignment(SwingConstants.LEFT);
+                comp.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+                boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
+                Color bgEven = isDark ? new Color(0x1D, 0x1E, 0x23) : new Color(0xFF, 0xFF, 0xFF);
+                Color bgOdd  = isDark ? new Color(0x24, 0x26, 0x2E) : new Color(0xF8, 0xFA, 0xFC);
+                Color textFg = isDark ? new Color(0xF0, 0xF0, 0xF0) : new Color(0x0F, 0x17, 0x2A);
+                Color selBg  = isDark ? new Color(0x3E, 0x44, 0x52) : new Color(0x25, 0x63, 0xEB);
+
+                if (sel) {
+                    comp.setBackground(selBg);
+                    comp.setForeground(Color.WHITE);
+                } else {
+                    comp.setBackground(r % 2 == 0 ? bgEven : bgOdd);
+                    comp.setForeground(textFg);
+                }
+                return comp;
+            }
+        };
 
         DefaultTableCellRenderer centerMonoRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean focus, int r, int c) {
-                Component comp = super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+                JLabel comp = (JLabel) super.getTableCellRendererComponent(t, val, sel, focus, r, c);
                 setFont(new Font("Monospaced", Font.BOLD, 13));
                 setHorizontalAlignment(SwingConstants.CENTER);
-                if (!sel) {
-                    if (c == 1) setForeground(new Color(0x00, 0xE6, 0x76)); // Green for Hex
-                    else if (c == 2 || c == 3) setForeground(new Color(0x29, 0xB6, 0xF6)); // Blue for Dec
-                    else if (c == 4) setForeground(new Color(0xFF, 0xB7, 0x4D)); // Orange for Binary
-                    else if (c == 5) setForeground(new Color(0xEA, 0x80, 0xFC)); // Pink/Purple for ASCII
+                boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
+                Color bgEven = isDark ? new Color(0x1D, 0x1E, 0x23) : new Color(0xFF, 0xFF, 0xFF);
+                Color bgOdd  = isDark ? new Color(0x24, 0x26, 0x2E) : new Color(0xF8, 0xFA, 0xFC);
+                Color selBg  = isDark ? new Color(0x3E, 0x44, 0x52) : new Color(0x25, 0x63, 0xEB);
+
+                if (sel) {
+                    comp.setBackground(selBg);
+                    comp.setForeground(Color.WHITE);
+                } else {
+                    comp.setBackground(r % 2 == 0 ? bgEven : bgOdd);
+                    if (c == 1) setForeground(isDark ? new Color(0x00, 0xE6, 0x76) : new Color(0x15, 0x80, 0x3D)); // Green for Hex
+                    else if (c == 2 || c == 3) setForeground(isDark ? new Color(0x29, 0xB6, 0xF6) : new Color(0x02, 0x84, 0xC7)); // Blue for Dec
+                    else if (c == 4) setForeground(isDark ? new Color(0xFF, 0xB7, 0x4D) : new Color(0xC2, 0x41, 0x0C)); // Amber/Orange for Binary
+                    else if (c == 5) setForeground(isDark ? new Color(0xEA, 0x80, 0xFC) : new Color(0x7E, 0x22, 0xCE)); // Purple for ASCII
                 }
                 return comp;
             }
@@ -153,28 +243,23 @@ public class MultiFormatRegisterInspector extends JFrame {
 
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createEmptyBorder());
-        add(sp, BorderLayout.CENTER);
+        mainPanel.add(sp, BorderLayout.CENTER);
 
         // --- BOTTOM FLAG BREAKDOWN PANEL ---
-        JPanel bottomPanel = new JPanel(new BorderLayout(5, 5));
-        bottomPanel.setBackground(new Color(0x1E, 0x1E, 0x1E));
-        bottomPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0x3E, 0x3E, 0x42)),
-                BorderFactory.createEmptyBorder(8, 12, 8, 12)
-        ));
+        bottomPanel = new JPanel(new BorderLayout(5, 5));
 
         lblFlagsBreakdown = new JLabel("FLAGS: S=0 | Z=0 | AC=0 | P=0 | CY=0");
         lblFlagsBreakdown.setFont(new Font("Monospaced", Font.BOLD, 14));
-        lblFlagsBreakdown.setForeground(new Color(0x00, 0xE6, 0x76));
 
-        JLabel infoNote = new JLabel(" Binary is formatted in 4-bit groups. ASCII shows printable characters or '.' for non-printables.");
+        infoNote = new JLabel(" Binary is formatted in 4-bit groups. ASCII shows printable characters or '.' for non-printables.");
         infoNote.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        infoNote.setForeground(new Color(0xAA, 0xAA, 0xAA));
 
         bottomPanel.add(lblFlagsBreakdown, BorderLayout.CENTER);
         bottomPanel.add(infoNote, BorderLayout.SOUTH);
 
-        add(bottomPanel, BorderLayout.SOUTH);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        updateThemeColors();
     }
 
     public void updateValues() {

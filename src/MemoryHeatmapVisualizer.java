@@ -44,6 +44,11 @@ public class MemoryHeatmapVisualizer extends JFrame {
     private JLabel lblAddr, lblValHex, lblValDec, lblValBin, lblType, lblStats;
     private Timer repaintTimer;
 
+    private JPanel topPanel;
+    private JPanel bottomPanel;
+    private JPanel infoGrid;
+    private JLabel lblLegendExec, lblLegendRead, lblLegendWrite, lblLegendUnaccessed;
+
     public MemoryHeatmapVisualizer(Matrix matrix, Assembler assembler) {
         this.matrix = matrix;
         this.assembler = assembler;
@@ -53,7 +58,6 @@ public class MemoryHeatmapVisualizer extends JFrame {
         setSize(950, 700);
         setLocationRelativeTo(assembler);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout());
 
         initComponents();
 
@@ -135,11 +139,100 @@ public class MemoryHeatmapVisualizer extends JFrame {
         }
     }
 
+    public void updateThemeColors() {
+        if (topPanel == null || bottomPanel == null || infoGrid == null) return;
+        boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
+        if (isDark) {
+            topPanel.setBackground(new Color(0x25, 0x25, 0x26));
+            topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0x3E, 0x3E, 0x42)));
+
+            chkExec.setForeground(new Color(0x2E, 0xCC, 0x71));
+            chkRead.setForeground(new Color(0x34, 0x98, 0xDB));
+            chkWrite.setForeground(new Color(0xE7, 0x4C, 0x3C));
+
+            bottomPanel.setBackground(new Color(0x1E, 0x1E, 0x1E));
+            bottomPanel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0x3E, 0x3E, 0x42)),
+                    BorderFactory.createEmptyBorder(8, 12, 8, 12)
+            ));
+
+            Color valFg = new Color(0xE0, 0xE0, 0xE0);
+            lblAddr.setForeground(valFg);
+            lblValHex.setForeground(valFg);
+            lblValDec.setForeground(valFg);
+            lblValBin.setForeground(valFg);
+            lblStats.setForeground(valFg);
+
+            for (Component comp : infoGrid.getComponents()) {
+                if (comp instanceof JPanel) {
+                    JPanel p = (JPanel) comp;
+                    p.setBackground(new Color(0x2A, 0x2A, 0x2D));
+                    if (p.getComponentCount() > 0 && p.getComponent(0) instanceof JLabel) {
+                        p.getComponent(0).setForeground(new Color(0xAA, 0xAA, 0xAA));
+                    }
+                }
+            }
+
+            lblLegendExec.setForeground(new Color(0x2E, 0xCC, 0x71));
+            lblLegendRead.setForeground(new Color(0x34, 0x98, 0xDB));
+            lblLegendWrite.setForeground(new Color(0xE7, 0x4C, 0x3C));
+            lblLegendUnaccessed.setForeground(new Color(0x88, 0x88, 0x88));
+        } else {
+            topPanel.setBackground(new Color(0xF1, 0xF5, 0xF9));
+            topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xCB, 0xD5, 0xE1)));
+
+            chkExec.setForeground(new Color(0x15, 0x80, 0x3D));
+            chkRead.setForeground(new Color(0x02, 0x84, 0xC7));
+            chkWrite.setForeground(new Color(0xDC, 0x26, 0x26));
+
+            bottomPanel.setBackground(new Color(0xF1, 0xF5, 0xF9));
+            bottomPanel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCB, 0xD5, 0xE1)),
+                    BorderFactory.createEmptyBorder(8, 12, 8, 12)
+            ));
+
+            Color valFg = new Color(0x0F, 0x17, 0x2A);
+            lblAddr.setForeground(valFg);
+            lblValHex.setForeground(valFg);
+            lblValDec.setForeground(valFg);
+            lblValBin.setForeground(valFg);
+            lblStats.setForeground(valFg);
+
+            for (Component comp : infoGrid.getComponents()) {
+                if (comp instanceof JPanel) {
+                    JPanel p = (JPanel) comp;
+                    p.setBackground(new Color(0xE2, 0xE8, 0xF0));
+                    if (p.getComponentCount() > 0 && p.getComponent(0) instanceof JLabel) {
+                        p.getComponent(0).setForeground(new Color(0x47, 0x55, 0x69));
+                    }
+                }
+            }
+
+            lblLegendExec.setForeground(new Color(0x15, 0x80, 0x3D));
+            lblLegendRead.setForeground(new Color(0x02, 0x84, 0xC7));
+            lblLegendWrite.setForeground(new Color(0xDC, 0x26, 0x26));
+            lblLegendUnaccessed.setForeground(new Color(0x64, 0x74, 0x8B));
+        }
+
+        if (canvas != null) {
+            canvas.updateUI();
+            canvas.repaint();
+        }
+        updateInspector(selectedAddress);
+    }
+
     private void initComponents() {
+        JPanel mainPanel = new JPanel(new BorderLayout()) {
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                updateThemeColors();
+            }
+        };
+        setContentPane(mainPanel);
+
         // --- TOP CONTROL BAR ---
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        topPanel.setBackground(new Color(0x25, 0x25, 0x26));
-        topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0x3E, 0x3E, 0x42)));
+        topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
 
         JButton btnToggleMode = new JButton(" Toggle 64KB / Page View");
         btnToggleMode.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -187,21 +280,16 @@ public class MemoryHeatmapVisualizer extends JFrame {
         btnReset.addActionListener(e -> resetHeatmap());
         topPanel.add(btnReset);
 
-        add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
 
         // --- MAIN CANVAS AREA ---
         canvas = new HeatmapCanvas();
-        add(canvas, BorderLayout.CENTER);
+        mainPanel.add(canvas, BorderLayout.CENTER);
 
         // --- BOTTOM DETAILS PANEL ---
-        JPanel bottomPanel = new JPanel(new BorderLayout(10, 5));
-        bottomPanel.setBackground(new Color(0x1E, 0x1E, 0x1E));
-        bottomPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0x3E, 0x3E, 0x42)),
-                BorderFactory.createEmptyBorder(8, 12, 8, 12)
-        ));
+        bottomPanel = new JPanel(new BorderLayout(10, 5));
 
-        JPanel infoGrid = new JPanel(new GridLayout(1, 6, 15, 5));
+        infoGrid = new JPanel(new GridLayout(1, 6, 15, 5));
         infoGrid.setOpaque(false);
 
         lblAddr = createValueLabel("0x0000 (0)");
@@ -223,13 +311,17 @@ public class MemoryHeatmapVisualizer extends JFrame {
         // Legend bar
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 2));
         legendPanel.setOpaque(false);
-        legendPanel.add(createLegendBadge(" Execution Byte", new Color(0x2E, 0xCC, 0x71)));
-        legendPanel.add(createLegendBadge(" Read Access", new Color(0x34, 0x98, 0xDB)));
-        legendPanel.add(createLegendBadge(" Write Access", new Color(0xE7, 0x4C, 0x3C)));
-        legendPanel.add(createLegendBadge(" Unaccessed", new Color(0x2A, 0x2A, 0x2C)));
+        lblLegendExec = createLegendBadge(" Execution Byte", new Color(0x2E, 0xCC, 0x71));
+        lblLegendRead = createLegendBadge(" Read Access", new Color(0x34, 0x98, 0xDB));
+        lblLegendWrite = createLegendBadge(" Write Access", new Color(0xE7, 0x4C, 0x3C));
+        lblLegendUnaccessed = createLegendBadge(" Unaccessed", new Color(0x2A, 0x2A, 0x2C));
+        legendPanel.add(lblLegendExec);
+        legendPanel.add(lblLegendRead);
+        legendPanel.add(lblLegendWrite);
+        legendPanel.add(lblLegendUnaccessed);
         bottomPanel.add(legendPanel, BorderLayout.SOUTH);
 
-        add(bottomPanel, BorderLayout.SOUTH);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         updateInspector(0);
     }
@@ -281,21 +373,22 @@ public class MemoryHeatmapVisualizer extends JFrame {
         lblValBin.setText(bin);
 
         int type = accessType[addr];
+        boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
         if (writeCounts[addr] > 0 && readCounts[addr] > 0) {
             lblType.setText(" WRITE &  READ");
-            lblType.setForeground(new Color(0xE0, 0x40, 0xFB));
+            lblType.setForeground(isDark ? new Color(0xE0, 0x40, 0xFB) : new Color(0x8E, 0x44, 0xAD));
         } else if (type == ACCESS_EXEC) {
             lblType.setText(" EXECUTION");
-            lblType.setForeground(new Color(0x2E, 0xCC, 0x71));
+            lblType.setForeground(isDark ? new Color(0x2E, 0xCC, 0x71) : new Color(0x27, 0xAE, 0x60));
         } else if (type == ACCESS_READ) {
             lblType.setText(" READ");
-            lblType.setForeground(new Color(0x34, 0x98, 0xDB));
+            lblType.setForeground(isDark ? new Color(0x34, 0x98, 0xDB) : new Color(0x29, 0x80, 0xB9));
         } else if (type == ACCESS_WRITE) {
             lblType.setText(" WRITE");
-            lblType.setForeground(new Color(0xE7, 0x4C, 0x3C));
+            lblType.setForeground(isDark ? new Color(0xE7, 0x4C, 0x3C) : new Color(0xC0, 0x39, 0x2B));
         } else {
             lblType.setText("NONE");
-            lblType.setForeground(new Color(0xAA, 0xAA, 0xAA));
+            lblType.setForeground(isDark ? new Color(0xAA, 0xAA, 0xAA) : new Color(0x66, 0x66, 0x66));
         }
 
         lblStats.setText(String.format("E:%d | R:%d | W:%d", execCounts[addr], readCounts[addr], writeCounts[addr]));
@@ -305,7 +398,6 @@ public class MemoryHeatmapVisualizer extends JFrame {
     private class HeatmapCanvas extends JPanel {
 
         public HeatmapCanvas() {
-            setBackground(new Color(0x18, 0x18, 0x18));
             setToolTipText("");
 
             MouseAdapter adapter = new MouseAdapter() {
@@ -348,6 +440,13 @@ public class MemoryHeatmapVisualizer extends JFrame {
             addMouseListener(adapter);
         }
 
+        @Override
+        public void updateUI() {
+            super.updateUI();
+            boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
+            setBackground(isDark ? new Color(0x18, 0x18, 0x18) : new Color(0xFA, 0xFA, 0xFA));
+        }
+
         private int getAddressFromPoint(Point p) {
             int w = getWidth();
             int h = getHeight();
@@ -383,6 +482,7 @@ public class MemoryHeatmapVisualizer extends JFrame {
             int w = getWidth();
             int h = getHeight();
             long now = System.currentTimeMillis();
+            boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
 
             if (fullMapMode) {
                 // 64 KB FULL MAP (256 cols x 256 rows)
@@ -403,7 +503,7 @@ public class MemoryHeatmapVisualizer extends JFrame {
                         g2.fillRect(x, y, cw, ch);
 
                         if (addr == hoveredAddress || addr == selectedAddress) {
-                            g2.setColor(Color.WHITE);
+                            g2.setColor(isDark ? Color.WHITE : Color.BLACK);
                             g2.drawRect(x, y, Math.max(1, cw - 1), Math.max(1, ch - 1));
                         }
                     }
@@ -430,11 +530,11 @@ public class MemoryHeatmapVisualizer extends JFrame {
                         g2.fillRect(x + 2, y + 2, cw - 4, ch - 4);
 
                         // Cell border
-                        g2.setColor(new Color(0x3A, 0x3A, 0x3C));
+                        g2.setColor(isDark ? new Color(0x3A, 0x3A, 0x3C) : new Color(0xDA, 0xDA, 0xDA));
                         g2.drawRect(x + 2, y + 2, cw - 4, ch - 4);
 
                         if (addr == hoveredAddress || addr == selectedAddress) {
-                            g2.setColor(Color.YELLOW);
+                            g2.setColor(isDark ? Color.YELLOW : new Color(0x00, 0x7A, 0xCC));
                             g2.setStroke(new BasicStroke(2));
                             g2.drawRect(x + 1, y + 1, cw - 2, ch - 2);
                             g2.setStroke(new BasicStroke(1));
@@ -445,11 +545,11 @@ public class MemoryHeatmapVisualizer extends JFrame {
                                 ? (assembler.matrix.memory[addr] & 0xFF)
                                 : ((matrix != null && matrix.memory != null) ? (matrix.memory[addr] & 0xFF) : 0);
                         g2.setFont(new Font("Monospaced", Font.BOLD, Math.min(13, (int) (cellH * 0.28))));
-                        g2.setColor(new Color(0xAA, 0xAA, 0xAA));
+                        g2.setColor(isDark ? new Color(0xAA, 0xAA, 0xAA) : new Color(0x55, 0x55, 0x55));
                         g2.drawString(String.format("%04X", addr), x + 6, y + (int) (cellH * 0.35));
 
                         g2.setFont(new Font("Monospaced", Font.BOLD, Math.min(16, (int) (cellH * 0.38))));
-                        g2.setColor(Color.WHITE);
+                        g2.setColor(isDark ? Color.WHITE : new Color(0x11, 0x11, 0x11));
                         g2.drawString(String.format("%02X", val), x + 6, y + (int) (cellH * 0.75));
                     }
                 }
@@ -459,37 +559,53 @@ public class MemoryHeatmapVisualizer extends JFrame {
         }
 
         private Color getCellColor(int addr, long now) {
+            boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
+            Color unaccessedColor = isDark ? new Color(0x22, 0x22, 0x24) : new Color(0xEE, 0xEE, 0xF0);
+
             int type = accessType[addr];
             if ((type == ACCESS_EXEC && !showExec) ||
                 (type == ACCESS_READ && !showRead) ||
                 (type == ACCESS_WRITE && !showWrite)) {
-                return new Color(0x22, 0x22, 0x24);
+                return unaccessedColor;
             }
 
             if (type == ACCESS_NONE) {
-                return new Color(0x22, 0x22, 0x24);
+                return unaccessedColor;
             }
 
             // Glow decay based on last access timestamp (up to 3 seconds fade)
             long elapsed = now - lastAccessTime[addr];
-            float decay = 1.0f - Math.min(1.0f, elapsed / 3000.0f); // 1.0 = fresh glow, 0.3 = settled color
+            float decay = 1.0f - Math.min(1.0f, elapsed / 3000.0f); // 1.0 = fresh glow, 0.0 = settled color
 
-            float alphaFactor = 0.35f + 0.65f * decay;
+            float factor = 0.30f + 0.70f * decay;
 
+            Color baseColor;
             if (writeCounts[addr] > 0 && readCounts[addr] > 0 && showWrite && showRead) {
-                return new Color((int) (224 * alphaFactor), (int) (64 * alphaFactor), (int) (251 * alphaFactor));
+                baseColor = isDark ? new Color(0xE0, 0x40, 0xFB) : new Color(0x8E, 0x44, 0xAD);
+            } else {
+                switch (type) {
+                    case ACCESS_EXEC: //  Green
+                        baseColor = isDark ? new Color(46, 204, 113) : new Color(39, 174, 96);
+                        break;
+                    case ACCESS_READ: //  Blue
+                        baseColor = isDark ? new Color(52, 152, 219) : new Color(41, 128, 185);
+                        break;
+                    case ACCESS_WRITE: //  Red
+                        baseColor = isDark ? new Color(231, 76, 60) : new Color(192, 57, 43);
+                        break;
+                    default:
+                        return unaccessedColor;
+                }
             }
 
-            switch (type) {
-                case ACCESS_EXEC: //  Green
-                    return new Color((int) (46 * alphaFactor), (int) (204 * alphaFactor), (int) (113 * alphaFactor));
-                case ACCESS_READ: //  Blue
-                    return new Color((int) (52 * alphaFactor), (int) (152 * alphaFactor), (int) (219 * alphaFactor));
-                case ACCESS_WRITE: //  Red
-                    return new Color((int) (231 * alphaFactor), (int) (76 * alphaFactor), (int) (60 * alphaFactor));
-                default:
-                    return new Color(0x22, 0x22, 0x24);
-            }
+            int r = (int) (baseColor.getRed() * factor + unaccessedColor.getRed() * (1 - factor));
+            int g = (int) (baseColor.getGreen() * factor + unaccessedColor.getGreen() * (1 - factor));
+            int b = (int) (baseColor.getBlue() * factor + unaccessedColor.getBlue() * (1 - factor));
+            return new Color(
+                Math.min(255, Math.max(0, r)),
+                Math.min(255, Math.max(0, g)),
+                Math.min(255, Math.max(0, b))
+            );
         }
     }
 }
