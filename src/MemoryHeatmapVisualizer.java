@@ -5,17 +5,17 @@ import java.awt.event.*;
 /**
  * Interactive Memory Heatmap & Visualizer for 8085 Microprocessor Simulator
  * 64 KB Memory Map (0x0000 - 0xFFFF) showing real-time memory activity:
- * 🟢 Green: Program Code Execution Bytes
- * 🔴 Red: Memory Writes
- * 🔵 Blue: Memory Reads
+ *  Green: Program Code Execution Bytes
+ *  Red: Memory Writes
+ *  Blue: Memory Reads
  */
 public class MemoryHeatmapVisualizer extends JFrame {
 
     public static final int MEMORY_SIZE = 65536; // 64 KB
     public static final int ACCESS_NONE = 0;
-    public static final int ACCESS_EXEC = 1; // 🟢 Green
-    public static final int ACCESS_READ = 2; // 🔵 Blue
-    public static final int ACCESS_WRITE = 3; // 🔴 Red
+    public static final int ACCESS_EXEC = 1; //  Green
+    public static final int ACCESS_READ = 2; //  Blue
+    public static final int ACCESS_WRITE = 3; //  Red
 
     // Access Data Arrays
     private static final byte[] accessType = new byte[MEMORY_SIZE];
@@ -49,7 +49,7 @@ public class MemoryHeatmapVisualizer extends JFrame {
         this.assembler = assembler;
         instance = this;
 
-        setTitle("🔥 8085 Interactive Memory Heatmap & Visualizer");
+        setTitle(" 8085 Interactive Memory Heatmap & Visualizer");
         setSize(950, 700);
         setLocationRelativeTo(assembler);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -141,11 +141,11 @@ public class MemoryHeatmapVisualizer extends JFrame {
         topPanel.setBackground(new Color(0x25, 0x25, 0x26));
         topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0x3E, 0x3E, 0x42)));
 
-        JButton btnToggleMode = new JButton("🌐 Toggle 64KB / Page View");
+        JButton btnToggleMode = new JButton(" Toggle 64KB / Page View");
         btnToggleMode.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnToggleMode.addActionListener(e -> {
             fullMapMode = !fullMapMode;
-            btnToggleMode.setText(fullMapMode ? "🔍 Switch to Page Detail View" : "🌐 Switch to 64KB Full Map");
+            btnToggleMode.setText(fullMapMode ? " Switch to Page Detail View" : " Switch to 64KB Full Map");
             pageCombo.setEnabled(!fullMapMode);
             canvas.repaint();
         });
@@ -167,9 +167,9 @@ public class MemoryHeatmapVisualizer extends JFrame {
         });
         topPanel.add(pageCombo);
 
-        chkExec = new JCheckBox("🟢 Code Exec", true);
-        chkRead = new JCheckBox("🔵 Memory Read", true);
-        chkWrite = new JCheckBox("🔴 Memory Write", true);
+        chkExec = new JCheckBox(" Code Exec", true);
+        chkRead = new JCheckBox(" Memory Read", true);
+        chkWrite = new JCheckBox(" Memory Write", true);
         styleCheckBox(chkExec, new Color(0x2E, 0xCC, 0x71));
         styleCheckBox(chkRead, new Color(0x34, 0x98, 0xDB));
         styleCheckBox(chkWrite, new Color(0xE7, 0x4C, 0x3C));
@@ -182,7 +182,7 @@ public class MemoryHeatmapVisualizer extends JFrame {
         topPanel.add(chkRead);
         topPanel.add(chkWrite);
 
-        JButton btnReset = new JButton("🧹 Clear Activity");
+        JButton btnReset = new JButton(" Clear Activity");
         btnReset.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnReset.addActionListener(e -> resetHeatmap());
         topPanel.add(btnReset);
@@ -223,10 +223,10 @@ public class MemoryHeatmapVisualizer extends JFrame {
         // Legend bar
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 2));
         legendPanel.setOpaque(false);
-        legendPanel.add(createLegendBadge("🟢 Execution Byte", new Color(0x2E, 0xCC, 0x71)));
-        legendPanel.add(createLegendBadge("🔵 Read Access", new Color(0x34, 0x98, 0xDB)));
-        legendPanel.add(createLegendBadge("🔴 Write Access", new Color(0xE7, 0x4C, 0x3C)));
-        legendPanel.add(createLegendBadge("⬛ Unaccessed", new Color(0x2A, 0x2A, 0x2C)));
+        legendPanel.add(createLegendBadge(" Execution Byte", new Color(0x2E, 0xCC, 0x71)));
+        legendPanel.add(createLegendBadge(" Read Access", new Color(0x34, 0x98, 0xDB)));
+        legendPanel.add(createLegendBadge(" Write Access", new Color(0xE7, 0x4C, 0x3C)));
+        legendPanel.add(createLegendBadge(" Unaccessed", new Color(0x2A, 0x2A, 0x2C)));
         bottomPanel.add(legendPanel, BorderLayout.SOUTH);
 
         add(bottomPanel, BorderLayout.SOUTH);
@@ -282,16 +282,16 @@ public class MemoryHeatmapVisualizer extends JFrame {
 
         int type = accessType[addr];
         if (writeCounts[addr] > 0 && readCounts[addr] > 0) {
-            lblType.setText("🔴 WRITE & 🔵 READ");
+            lblType.setText(" WRITE &  READ");
             lblType.setForeground(new Color(0xE0, 0x40, 0xFB));
         } else if (type == ACCESS_EXEC) {
-            lblType.setText("🟢 EXECUTION");
+            lblType.setText(" EXECUTION");
             lblType.setForeground(new Color(0x2E, 0xCC, 0x71));
         } else if (type == ACCESS_READ) {
-            lblType.setText("🔵 READ");
+            lblType.setText(" READ");
             lblType.setForeground(new Color(0x34, 0x98, 0xDB));
         } else if (type == ACCESS_WRITE) {
-            lblType.setText("🔴 WRITE");
+            lblType.setText(" WRITE");
             lblType.setForeground(new Color(0xE7, 0x4C, 0x3C));
         } else {
             lblType.setText("NONE");
@@ -481,11 +481,11 @@ public class MemoryHeatmapVisualizer extends JFrame {
             }
 
             switch (type) {
-                case ACCESS_EXEC: // 🟢 Green
+                case ACCESS_EXEC: //  Green
                     return new Color((int) (46 * alphaFactor), (int) (204 * alphaFactor), (int) (113 * alphaFactor));
-                case ACCESS_READ: // 🔵 Blue
+                case ACCESS_READ: //  Blue
                     return new Color((int) (52 * alphaFactor), (int) (152 * alphaFactor), (int) (219 * alphaFactor));
-                case ACCESS_WRITE: // 🔴 Red
+                case ACCESS_WRITE: //  Red
                     return new Color((int) (231 * alphaFactor), (int) (76 * alphaFactor), (int) (60 * alphaFactor));
                 default:
                     return new Color(0x22, 0x22, 0x24);

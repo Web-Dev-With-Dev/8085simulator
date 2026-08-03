@@ -46,7 +46,7 @@ public class MultiFormatRegisterInspector extends JFrame {
         this.assembler = assembler;
         instance = this;
 
-        setTitle("📊 8085 Multi-Format Register Inspector");
+        setTitle(" 8085 Multi-Format Register Inspector");
         setSize(850, 520);
         setLocationRelativeTo(assembler);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -83,12 +83,12 @@ public class MultiFormatRegisterInspector extends JFrame {
         topPanel.setBackground(new Color(0x25, 0x25, 0x26));
         topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0x3E, 0x3E, 0x42)));
 
-        JLabel titleLabel = new JLabel("📊 Real-Time Multi-Format Register & Memory Inspector");
+        JLabel titleLabel = new JLabel(" Real-Time Multi-Format Register & Memory Inspector");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
         titleLabel.setForeground(new Color(0x00, 0xA8, 0xFF));
         topPanel.add(titleLabel);
 
-        JButton btnRefresh = new JButton("🔄 Sync Now");
+        JButton btnRefresh = new JButton(" Sync Now");
         btnRefresh.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnRefresh.addActionListener(e -> updateValues());
         topPanel.add(btnRefresh);
@@ -167,7 +167,7 @@ public class MultiFormatRegisterInspector extends JFrame {
         lblFlagsBreakdown.setFont(new Font("Monospaced", Font.BOLD, 14));
         lblFlagsBreakdown.setForeground(new Color(0x00, 0xE6, 0x76));
 
-        JLabel infoNote = new JLabel("💡 Binary is formatted in 4-bit groups. ASCII shows printable characters or '.' for non-printables.");
+        JLabel infoNote = new JLabel(" Binary is formatted in 4-bit groups. ASCII shows printable characters or '.' for non-printables.");
         infoNote.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         infoNote.setForeground(new Color(0xAA, 0xAA, 0xAA));
 
@@ -229,7 +229,7 @@ public class MultiFormatRegisterInspector extends JFrame {
         int carry = (flags & 1) != 0 ? 1 : 0;
 
         lblFlagsBreakdown.setText(String.format(
-                "🚩 8085 FLAGS:  [S: %d]  [Z: %d]  [AC: %d]  [P: %d]  [CY: %d]  (PSW Hex: 0x%02X)",
+                " 8085 FLAGS:  [S: %d]  [Z: %d]  [AC: %d]  [P: %d]  [CY: %d]  (PSW Hex: 0x%02X)",
                 sign, zero, auxCarry, parity, carry, flags
         ));
     }

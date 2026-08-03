@@ -53,37 +53,37 @@ public class CodeWizard extends javax.swing.JFrame {
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("Code Classification");
         javax.swing.tree.DefaultMutableTreeNode treeNode2 = new javax.swing.tree.DefaultMutableTreeNode("Data Transfer Operation");
         javax.swing.tree.DefaultMutableTreeNode treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Load Data");
-        javax.swing.tree.DefaultMutableTreeNode treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Register         ←   Data");
+        javax.swing.tree.DefaultMutableTreeNode treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Register            Data");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator  ←   Data");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator     Data");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator  ←   Data (from memory address directly)");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator     Data (from memory address directly)");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator  ←   Data (from memory address pointed by Reg Pair H-L)");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator     Data (from memory address pointed by Reg Pair H-L)");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator  ←   Data (from memory address pointed by Reg. Pair)");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator     Data (from memory address pointed by Reg. Pair)");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Register Pair ←   Data");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Register Pair    Data");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Reg. pair H-L  ←   Data (from memory address directly)");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Reg. pair H-L     Data (from memory address directly)");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Stack Pointer (SP)  ←  Reg. pair H-L");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Stack Pointer (SP)    Reg. pair H-L");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Program Counter (PC)  ←   Reg. pair H-L");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Program Counter (PC)     Reg. pair H-L");
         treeNode3.add(treeNode4);
         treeNode2.add(treeNode3);
         treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Store Data");
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator(Data)  → Memory (at address specified directly)");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator(Data)   Memory (at address specified directly)");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator(Data)  → Memory (at address pointed by Reg Pair H-L)");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator(Data)   Memory (at address pointed by Reg Pair H-L)");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator(Data)  → Memory (at address pointed by Reg. Pair)");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator(Data)   Memory (at address pointed by Reg. Pair)");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Reg. pair H-L(Data) → Memory (at address specified directly)");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Reg. pair H-L(Data)  Memory (at address specified directly)");
         treeNode3.add(treeNode4);
         treeNode2.add(treeNode3);
         treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Move Data");
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Register ←  Register");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Register   Register");
         treeNode3.add(treeNode4);
         treeNode2.add(treeNode3);
         treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Stack");
@@ -93,9 +93,9 @@ public class CodeWizard extends javax.swing.JFrame {
         treeNode3.add(treeNode4);
         treeNode2.add(treeNode3);
         treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Exchange");
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("H-L   ←→  D-E");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("H-L     D-E");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("H-L   ←→  Stack Top Pointer");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("H-L     Stack Top Pointer");
         treeNode3.add(treeNode4);
         treeNode2.add(treeNode3);
         treeNode1.add(treeNode2);
@@ -267,20 +267,20 @@ public class CodeWizard extends javax.swing.JFrame {
         treeNode3.add(treeNode4);
         treeNode2.add(treeNode3);
         treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Change Program Counter");
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Program Counter (PC)  ←   Reg. pair H-L");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Program Counter (PC)     Reg. pair H-L");
         treeNode3.add(treeNode4);
         treeNode2.add(treeNode3);
         treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Change Stack Pointer");
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Stack Pointer (SP)  ←  Reg. pair H-L");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("Stack Pointer (SP)    Reg. pair H-L");
         treeNode3.add(treeNode4);
-        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("H-L   ←→  Stack Top Pointer");
+        treeNode4 = new javax.swing.tree.DefaultMutableTreeNode("H-L     Stack Top Pointer");
         treeNode3.add(treeNode4);
         treeNode2.add(treeNode3);
         treeNode1.add(treeNode2);
         treeNode2 = new javax.swing.tree.DefaultMutableTreeNode("I/O Operation");
-        treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator  ←  Input data");
+        treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator    Input data");
         treeNode2.add(treeNode3);
-        treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator   → Output data");
+        treeNode3 = new javax.swing.tree.DefaultMutableTreeNode("Accumulator    Output data");
         treeNode2.add(treeNode3);
         treeNode1.add(treeNode2);
         treeNode2 = new javax.swing.tree.DefaultMutableTreeNode("Interrupt Operation");
@@ -677,46 +677,46 @@ public class CodeWizard extends javax.swing.JFrame {
     {
         String t="";
 
-        if (s.equals("Register         ←   Data")) {t="MVI "+reg1()+","+data2digit();hideNseek(1, 0, 0, 1);
+        if (s.equals("Register            Data")) {t="MVI "+reg1()+","+data2digit();hideNseek(1, 0, 0, 1);
         }
-        else if (s.equals("Accumulator  ←   Data")) {
+        else if (s.equals("Accumulator     Data")) {
             t="MVI A,"+data2digit();hideNseek(0, 0, 0, 1);
         }
-        else if (s.equals("Accumulator  ←   Data (from memory address directly)")) {
+        else if (s.equals("Accumulator     Data (from memory address directly)")) {
             t="LDA "+data4digit();hideNseek(0, 0, 0, 1);
         }
-        else if (s.equals("Accumulator  ←   Data (from memory address pointed by Reg Pair H-L)")) {
+        else if (s.equals("Accumulator     Data (from memory address pointed by Reg Pair H-L)")) {
             t="MOV A,M";hideNseek(0, 0, 0, 0);
         }
-        else if (s.equals("Accumulator  ←   Data (from memory address pointed by Reg. Pair)")) {
+        else if (s.equals("Accumulator     Data (from memory address pointed by Reg. Pair)")) {
             t="LDAX "+regPair();hideNseek(0, 0, 1, 0);
 
         }
-        else if (s.equals("Register Pair ←   Data")) {
+        else if (s.equals("Register Pair    Data")) {
             t="LXI "+regPair()+","+data4digit();hideNseek(0, 0, 1, 1);
         }
-        else if (s.equals("Reg. pair H-L  ←   Data (from memory address directly)")) {
+        else if (s.equals("Reg. pair H-L     Data (from memory address directly)")) {
             t="LHLD "+data4digit();hideNseek(0, 0, 0, 1);
         }
-        else if(s.equals("Stack Pointer (SP)  ←  Reg. pair H-L")){
+        else if(s.equals("Stack Pointer (SP)    Reg. pair H-L")){
             t="SPHL";hideNseek(0, 0, 0, 0);
         }
-        else if(s.equals("Program Counter (PC)  ←   Reg. pair H-L")){
+        else if(s.equals("Program Counter (PC)     Reg. pair H-L")){
             t="PCHL";hideNseek(0, 0, 0, 0);
         }
-        else if(s.equals("Accumulator(Data)  → Memory (at address specified directly)")){
+        else if(s.equals("Accumulator(Data)   Memory (at address specified directly)")){
             t="STA "+data4digit();hideNseek(0, 0, 0, 1);
         }
-        else if(s.equals("Accumulator(Data)  → Memory (at address pointed by Reg Pair H-L)")){
+        else if(s.equals("Accumulator(Data)   Memory (at address pointed by Reg Pair H-L)")){
             t="MOV M,A";
         }
-        else if(s.equals("Accumulator(Data)  → Memory (at address pointed by Reg. Pair)")){
+        else if(s.equals("Accumulator(Data)   Memory (at address pointed by Reg. Pair)")){
             t="STAX "+regPair();hideNseek(0, 0, 1, 0);
         }
-        else if(s.equals("Reg. pair H-L(Data) → Memory (at address specified directly)")){
+        else if(s.equals("Reg. pair H-L(Data)  Memory (at address specified directly)")){
             t="SHLD "+data4digit();hideNseek(0, 0, 0, 1);
         }
-        else if (s.equals("Register ←  Register")) {
+        else if (s.equals("Register   Register")) {
             t="MOV "+reg1()+","+reg2();hideNseek(1, 1, 0, 0);
         }
         else if (s.equals("Push")) {
@@ -725,10 +725,10 @@ public class CodeWizard extends javax.swing.JFrame {
         else if (s.equals("Pop")) {
             t="POP "+regPair();hideNseek(0, 0, 1, 0);
         }
-        else if (s.equals("H-L   ←→  D-E")) {
+        else if (s.equals("H-L     D-E")) {
             t="XCHG";hideNseek(0, 0, 0, 0);
         }
-        else if (s.equals("H-L   ←→  Stack Top Pointer")) {
+        else if (s.equals("H-L     Stack Top Pointer")) {
             t="XTHL";hideNseek(0, 0, 0, 0);
         }
 
@@ -952,11 +952,11 @@ public class CodeWizard extends javax.swing.JFrame {
 
     public String funcIO(String s){
         String t="";
-        if (s.equals("Accumulator  ←  Input data")) {
+        if (s.equals("Accumulator    Input data")) {
           t="IN "+data2digit();hideNseek(0, 0, 0, 1);
 
         }
-        else if (s.equals("Accumulator   → Output data")) {
+        else if (s.equals("Accumulator    Output data")) {
             t="OUT "+data2digit();hideNseek(0, 0, 0, 1);
         }
 

@@ -414,7 +414,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
             java.awt.image.BufferedImage logoIcon = javax.imageio.ImageIO.read(getClass().getResourceAsStream("/aura_logo.dat"));
             if (logoIcon != null) setIconImage(logoIcon);
         } catch (Exception ignored) {}
-        // Start maximized and fill screen — responsive to any window size
+        // Start maximized and fill screen  responsive to any window size
         Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         setMinimumSize(new Dimension(800, 600));
         setPreferredSize(new Dimension(screenSize.width, screenSize.height));
@@ -1337,7 +1337,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
     jInternalFrame6.getContentPane().add(jTextFieldBeginFrom);
     jTextFieldBeginFrom.setBounds(100, 0, 48, 30);
 
-    jLabel6.setText("Start From  →");
+    jLabel6.setText("Start From  ");
     jLabel6.setName("jLabel6"); // NOI18N
     jInternalFrame6.getContentPane().add(jLabel6);
     jLabel6.setBounds(0, 0, 100, 20);
@@ -1564,7 +1564,6 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
     jSeparator11.setName("jSeparator11"); // NOI18N
     jMenuFile.add(jSeparator11);
 
-    jMenuItemRecover.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
     jMenuItemRecover.setText("Recover last session");
     jMenuItemRecover.setName("jMenuItemRecover"); // NOI18N
     jMenuItemRecover.addActionListener(new java.awt.event.ActionListener() {
@@ -2070,7 +2069,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
            : continueFrom;
 
        if (speed[1] != 1) {
-           // ── Normal / Ultimate speed mode ───────────────────────
+           //  Normal / Ultimate speed mode 
            jProgressBar1.setVisible(true);
            while ((!stop) && matrix.PC < matrix.stopAddress && (!pause)) {
                try {
@@ -2088,7 +2087,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                }
            }
        } else {
-           // ── Step-by-step (slow) speed mode ─────────────────────
+           //  Step-by-step (slow) speed mode 
            if (continueFrom == 0) jButtonStop.setText("Pause");
            while ((!stop) && matrix.PC < matrix.stopAddress && (!pause)) {
                try {
@@ -2112,7 +2111,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                jProgressBar1.setVisible(false);
                set();
                if (completed && lintStatusLabel != null) {
-                   lintStatusLabel.setText(" ✅ Program Execution Completed Successfully at PC = " + engine.Dec2Hex(endPc) + "H ");
+                   lintStatusLabel.setText("  Program Execution Completed Successfully at PC = " + engine.Dec2Hex(endPc) + "H ");
                }
            });
        } else {
@@ -2160,7 +2159,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         stop=true;
         pause=false;
         if (lintStatusLabel != null)
-            lintStatusLabel.setText(" ⏹ Stopped ");
+            lintStatusLabel.setText("  Stopped ");
         File f=new File("cache");
         deleteDir(f);
       }
@@ -2201,7 +2200,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
        set();
        jButtonBackward.setEnabled(matrix.getHistorySize() > 0);
        if (lintStatusLabel != null) {
-           lintStatusLabel.setText(" ⏪ Stepped Backward to PC = " + engine.Dec2Hex(matrix.PC) + "H (History depth: " + matrix.getHistorySize() + " steps) ");
+           lintStatusLabel.setText("  Stepped Backward to PC = " + engine.Dec2Hex(matrix.PC) + "H (History depth: " + matrix.getHistorySize() + " steps) ");
        }
     }//GEN-LAST:event_jButtonBackwardActionPerformed
 
@@ -2628,7 +2627,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                     s=engine.MnemonicToHexcode(jTableAssembler.getValueAt(i, 3).toString());
                     funcNo=Integer.parseInt(s[3].trim());
                     if(s[0].equalsIgnoreCase("NOP")){jTableAssembler.setValueAt("X",i,0);}
-                    else jTableAssembler.setValueAt("√",i,0);
+                    else jTableAssembler.setValueAt("",i,0);
 
                     try{
                         if(Integer.parseInt(jTableAssembler.getValueAt(i,1).toString())>0)
@@ -2881,7 +2880,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                    jLabelComment.setForeground(new Color(13, 110, 253));
                    jLabelComment.setVisible(true);
                    String stepExpl = matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString()));
-                   jLabelComment.setText("<html><b>💡 Step Explainer:</b> " + stepExpl + "</html>");
+                   jLabelComment.setText("<html><b> Step Explainer:</b> " + stepExpl + "</html>");
                    matrix.select=matrix.select+Integer.parseInt(jTableAssembler.getValueAt(matrix.select, 5).toString().trim());
                    break loop;
               }
@@ -3042,8 +3041,8 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
        jButtonContinue.setVisible(false);
        pause = false;
        if (lintStatusLabel != null)
-           lintStatusLabel.setText(" ▶ Resuming Run-All from PC = "
-               + engine.Dec2Hex(continueFrom) + "H … ");
+           lintStatusLabel.setText("  Resuming Run-All from PC = "
+               + engine.Dec2Hex(continueFrom) + "H  ");
        ExecutorService exec = Executors.newCachedThreadPool();
        exec.execute(this);
 
@@ -3053,7 +3052,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
        if (jTableAssembler.isColumnSelected(0) && jTableAssembler.getValueAt(jTableAssembler.getSelectedRow(), 0) != null) {
            if (!jTableAssembler.getValueAt(jTableAssembler.getSelectedRow(), 0).toString().equalsIgnoreCase("X")) {
                if (jTableAssembler.getValueAt(jTableAssembler.getSelectedRow(), 0).toString().equalsIgnoreCase("#")) {
-                   jTableAssembler.setValueAt("√", jTableAssembler.getSelectedRow(), 0);
+                   jTableAssembler.setValueAt("", jTableAssembler.getSelectedRow(), 0);
                } else {
                    jTableAssembler.setValueAt("#", jTableAssembler.getSelectedRow(), 0);
                }
@@ -3461,7 +3460,7 @@ public int find=0;
             x=engine.getBytesFromMnemonics(temp);
             value="";
             if(engine.S[index].equalsIgnoreCase("NOP")){jTableAssembler.setValueAt("X",i,0);}
-            else jTableAssembler.setValueAt("√",i,0);
+            else jTableAssembler.setValueAt("",i,0);
 
             jTableAssembler.setValueAt("       "+engine.I[index][0],i,5);
             jTableAssembler.setValueAt("        "+engine.I[index][1],i,6);
@@ -4133,13 +4132,13 @@ public int find=0;
         // 1. Add Theme menu to jMenuBar1
         javax.swing.JMenu themeMenu = new javax.swing.JMenu("Theme");
         
-        javax.swing.JMenuItem darkTheme = new javax.swing.JMenuItem("🌙 Flat Dark Mode");
+        javax.swing.JMenuItem darkTheme = new javax.swing.JMenuItem(" Flat Dark Mode");
         darkTheme.addActionListener(e -> applyTheme("dark"));
 
-        javax.swing.JMenuItem lightTheme = new javax.swing.JMenuItem("☀️ Flat Light Mode");
+        javax.swing.JMenuItem lightTheme = new javax.swing.JMenuItem(" Flat Light Mode");
         lightTheme.addActionListener(e -> applyTheme("light"));
 
-        javax.swing.JMenuItem systemTheme = new javax.swing.JMenuItem("💻 System Default");
+        javax.swing.JMenuItem systemTheme = new javax.swing.JMenuItem(" System Default");
         systemTheme.addActionListener(e -> applyTheme("system"));
 
         themeMenu.add(darkTheme);
@@ -4152,7 +4151,7 @@ public int find=0;
         formatItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
         formatItem.addActionListener(e -> formatCodeAction());
 
-        javax.swing.JMenuItem heatmapItem = new javax.swing.JMenuItem("🔥 Memory Heatmap & Visualizer");
+        javax.swing.JMenuItem heatmapItem = new javax.swing.JMenuItem(" Memory Heatmap & Visualizer");
         heatmapItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
         heatmapItem.addActionListener(e -> {
             MemoryHeatmapVisualizer vis = MemoryHeatmapVisualizer.getInstance(matrix, this);
@@ -4160,7 +4159,7 @@ public int find=0;
             vis.toFront();
         });
 
-        javax.swing.JMenuItem regInspectorItem = new javax.swing.JMenuItem("📊 Multi-Format Register Inspector");
+        javax.swing.JMenuItem regInspectorItem = new javax.swing.JMenuItem(" Multi-Format Register Inspector");
         regInspectorItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
         regInspectorItem.addActionListener(e -> {
             MultiFormatRegisterInspector insp = MultiFormatRegisterInspector.getInstance(matrix, this);
@@ -4172,6 +4171,33 @@ public int find=0;
         jMenu1.add(formatItem);
         jMenu1.add(heatmapItem);
         jMenu1.add(regInspectorItem);
+
+        // Global Keybindings for Tools (WHEN_IN_FOCUSED_WINDOW)
+        getRootPane().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK),
+            "openRegInspector"
+        );
+        getRootPane().getActionMap().put("openRegInspector", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                MultiFormatRegisterInspector insp = MultiFormatRegisterInspector.getInstance(matrix, Assembler.this);
+                insp.setVisible(true);
+                insp.toFront();
+            }
+        });
+
+        getRootPane().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK),
+            "openHeatmap"
+        );
+        getRootPane().getActionMap().put("openHeatmap", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                MemoryHeatmapVisualizer vis = MemoryHeatmapVisualizer.getInstance(matrix, Assembler.this);
+                vis.setVisible(true);
+                vis.toFront();
+            }
+        });
 
         // 3. Add Lint Status bar at bottom
         lintStatusLabel = new javax.swing.JLabel(" Syntax: Ready ");
