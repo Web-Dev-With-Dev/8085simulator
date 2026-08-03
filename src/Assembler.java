@@ -393,7 +393,12 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setTitle("8085 Simulator");
+        setTitle("AURA SIMULATOR");
+        // Set AURA SIMULATOR logo as window icon
+        try {
+            java.awt.image.BufferedImage logoIcon = javax.imageio.ImageIO.read(getClass().getResourceAsStream("/aura_logo.dat"));
+            if (logoIcon != null) setIconImage(logoIcon);
+        } catch (Exception ignored) {}
         setBounds(new java.awt.Rectangle(20, 0, 200, 0));
         setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -3242,7 +3247,7 @@ public int find=0;
 
        PrinterJob printJob = PrinterJob.getPrinterJob();
        MessageFormat header=new MessageFormat("");
-       MessageFormat footer=new MessageFormat("By Jubin`s 8085 simulator");
+       MessageFormat footer=new MessageFormat("AURA SIMULATOR");
        printJob.setPrintable(jTextAreaAssemblyLanguageEditor.getPrintable(header, footer));
        if (printJob.printDialog()) {
            try {
@@ -3258,7 +3263,7 @@ public int find=0;
 
        PrinterJob printJob = PrinterJob.getPrinterJob();
        MessageFormat header = new MessageFormat("");
-       MessageFormat footer = new MessageFormat("By Jubin's 8085 simulator");
+       MessageFormat footer = new MessageFormat("AURA SIMULATOR");
        String temp=jTextAreaAssemblyLanguageEditor.getText();
        String s="";
        s=s+jTableAssembler.getColumnName(1)+"\t  "+jTableAssembler.getColumnName(2)+"\t"+jTableAssembler.getColumnName(3)+"\t"+jTableAssembler.getColumnName(4)+"\t"+jTableAssembler.getColumnName(5)+"\t"+jTableAssembler.getColumnName(6)+"\t"+jTableAssembler.getColumnName(7)+"\n\n";

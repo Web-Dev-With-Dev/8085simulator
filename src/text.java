@@ -18,7 +18,7 @@ import javax.swing.text.StyledDocument;
  */
 /**
  *
- * @author Jubin
+ * @author AURA SIMULATOR
  */
 public class text extends javax.swing.JFrame {
 

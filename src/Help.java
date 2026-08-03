@@ -11,7 +11,7 @@
 
 /**
  *
- * @author Jubin
+ * @author AURA SIMULATOR
  */
 public class Help extends javax.swing.JFrame {
 

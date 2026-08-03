@@ -15,7 +15,7 @@ import javax.swing.text.StyledDocument;
 
 /**
  *
- * @author Jubin
+ * @author AURA SIMULATOR
  */
 public class TextEditor {
 

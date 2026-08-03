@@ -101,7 +101,7 @@ public class FileChooser extends javax.swing.JFrame {
         {
             path=jFileChooser1.getSelectedFile().toString();
             o.path=path;
-            o.setTitle("8085 Simulator - "+o.path);
+            o.setTitle("AURA SIMULATOR - "+o.path);
             File selectedFile = jFileChooser1.getSelectedFile();
             String btnText = jFileChooser1.getApproveButtonText();
 

@@ -51,7 +51,7 @@ public class About extends JFrame
     setResizable(false);
 
     appTitleLabel.setFont(appTitleLabel.getFont().deriveFont(appTitleLabel.getFont().getStyle() | 0x1, appTitleLabel.getFont().getSize() + 4));
-    appTitleLabel.setText("8085 Simulator");
+    appTitleLabel.setText("AURA SIMULATOR");
 
     appDescLabel.setText("Programming made easy.");
 
@@ -102,7 +102,7 @@ public class About extends JFrame
             }
             
         });
-    this.jLabel1.setIcon(new ImageIcon(super.getClass().getResource("/create.dat")));
+    this.jLabel1.setIcon(new ImageIcon(super.getClass().getResource("/aura_logo.dat")));
 
     GroupLayout layout = new GroupLayout(getContentPane());
     getContentPane().setLayout(layout);

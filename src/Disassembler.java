@@ -4,7 +4,7 @@ import javax.swing.text.DefaultHighlighter;
 
 /**
  *
- * @author Jubin
+ * @author AURA SIMULATOR
  */
 public class Disassembler {
 
