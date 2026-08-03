@@ -51,6 +51,21 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         disassembler = new Disassembler(this);
         textEditor=new TextEditor(this);
         initComponents();
+        // Set AURA logo on all internal frame title bars
+        try {
+            java.awt.image.BufferedImage raw = javax.imageio.ImageIO.read(
+                getClass().getResourceAsStream("/aura_logo.dat"));
+            if (raw != null) {
+                java.awt.Image scaled = raw.getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH);
+                javax.swing.ImageIcon auraIcon = new javax.swing.ImageIcon(scaled);
+                jInternalFrame1.setFrameIcon(auraIcon);
+                jInternalFrame2.setFrameIcon(auraIcon);
+                jInternalFrame3.setFrameIcon(auraIcon);
+                jInternalFrame4.setFrameIcon(auraIcon);
+                jInternalFrame5.setFrameIcon(auraIcon);
+                jInternalFrame6.setFrameIcon(auraIcon);
+            }
+        } catch (Exception ignored) {}
         jTabbedPaneAssemblerEditor.removeAll();
         jTabbedPaneAssemblerEditor.addTab("Assembler",jScrollPane9);
         jTabbedPaneAssemblerEditor.addTab("Disassembler",jScrollPane5);
@@ -399,7 +414,11 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
             java.awt.image.BufferedImage logoIcon = javax.imageio.ImageIO.read(getClass().getResourceAsStream("/aura_logo.dat"));
             if (logoIcon != null) setIconImage(logoIcon);
         } catch (Exception ignored) {}
-        setBounds(new java.awt.Rectangle(20, 0, 200, 0));
+        // Start maximized and fill screen — responsive to any window size
+        Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        setMinimumSize(new Dimension(800, 600));
+        setPreferredSize(new Dimension(screenSize.width, screenSize.height));
+        setLocation(0, 0);
         setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -413,6 +432,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         jTabbedPaneMemory.setName("jTabbedPaneMemory"); // NOI18N
 
         jInternalFrame3.setTitle("Registers : ");
+        jInternalFrame3.setFrameIcon(null);
         jInternalFrame3.setName("jInternalFrame3"); // NOI18N
 
         jScrollPane15.setName("jScrollPane15"); // NOI18N
@@ -820,6 +840,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         jTabbedPaneMemory.addTab("Registers", jInternalFrame3);
 
         jInternalFrame2.setTitle("Memory Editor");
+        jInternalFrame2.setFrameIcon(null);
         jInternalFrame2.setName("jInternalFrame2"); // NOI18N
 
         jTextFieldMemBegin.setEditable(false);
@@ -950,6 +971,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         jTabbedPaneMemory.addTab("Memory", jInternalFrame2);
 
         jInternalFrame4.setTitle("Interfacing device");
+        jInternalFrame4.setFrameIcon(null);
         jInternalFrame4.setName("jInternalFrame4"); // NOI18N
 
         jTabbedPaneInterface.setName("jTabbedPaneInterface"); // NOI18N
@@ -1108,7 +1130,9 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
 
         jTabbedPaneEditor.setName("jTabbedPaneEditor"); // NOI18N
 
-        jInternalFrame1.setTitle("8085 Assembly Language Editor");
+        jInternalFrame1.setTitle("");
+        jInternalFrame1.setFrameIcon(null);
+        jInternalFrame1.putClientProperty("JInternalFrame.isPalette", Boolean.TRUE); // hides title bar
         jInternalFrame1.setName("jInternalFrame1"); // NOI18N
 
         jButtonAssemble.setText("Assemble");
@@ -1210,6 +1234,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         jTabbedPaneEditor.addTab("Editor", jInternalFrame1);
 
         jInternalFrame5.setTitle("Assembler");
+        jInternalFrame5.setFrameIcon(null);
         jInternalFrame5.setName("jInternalFrame5"); // NOI18N
 
         jLabelComment.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
@@ -1261,12 +1286,19 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
     jScrollPane16.setViewportView(jTableAssembler);
     jTableAssembler.getColumnModel().getColumn(0).setPreferredWidth(10);
     jTableAssembler.getColumnModel().getColumn(3).setPreferredWidth(125);
+    // Center-align all columns
+    javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer();
+    centerRenderer.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+    for (int col = 0; col < jTableAssembler.getColumnCount(); col++) {
+        jTableAssembler.getColumnModel().getColumn(col).setCellRenderer(centerRenderer);
+    }
 
     jLabelError.setForeground(new java.awt.Color(255, 51, 51));
     jLabelError.setText("Error : ");
     jLabelError.setName("jLabelError"); // NOI18N
 
     jInternalFrame6.setTitle("Simulate");
+    jInternalFrame6.setFrameIcon(null);
     jInternalFrame6.setName("jInternalFrame6"); // NOI18N
     jInternalFrame6.setVisible(true);
     jInternalFrame6.getContentPane().setLayout(null);
@@ -1994,11 +2026,11 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         .addGroup(layout.createSequentialGroup()
             .addContainerGap()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jTabbedPaneEditor, javax.swing.GroupLayout.PREFERRED_SIZE, 472, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jTabbedPaneEditor, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
                 .addComponent(jLabel1))
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(jTabbedPaneMemory, javax.swing.GroupLayout.PREFERRED_SIZE, 440, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addContainerGap())
     );
     layout.setVerticalGroup(
         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2012,6 +2044,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
     );
 
     pack();
+    setExtendedState(java.awt.Frame.MAXIMIZED_BOTH); // fill screen on open
     }// </editor-fold>//GEN-END:initComponents
 
    private void jButtonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRunActionPerformed
