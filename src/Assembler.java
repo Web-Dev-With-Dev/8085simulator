@@ -531,10 +531,10 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         jTableFlagregister.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jTableFlagregister.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"Flag Resister", null, null, null, null, null, null, null, null, null}
+                {"Flag Register", null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Resister", "Value", "S", "Z", "*", "AC", "*", "P", "*", "CY"
+                "Register", "Value", "S", "Z", "*", "AC", "*", "P", "*", "CY"
             }
         ) {
             Class[] types = new Class [] {
@@ -811,27 +811,27 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
             jInternalFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jInternalFrame3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane12, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane12, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane18, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane18, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jInternalFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel10)
-                    .addComponent(jScrollPane15, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane15, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jInternalFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel12)
-                    .addComponent(jScrollPane17, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane17, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jInternalFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel8)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 9, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane14, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane14, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabelErrorHang)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -2242,10 +2242,11 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
            row++;
            }
        }
-       jRadioButtonShowAll.setSelected(false);
-       jRadioButtonStoreMemoryLocation.setSelected(false);
-       jRadioButtonUsedMemoryLocation.setSelected(true);
-       tableState=1;
+        jRadioButtonShowAll.setSelected(false);
+        jRadioButtonStoreMemoryLocation.setSelected(false);
+        jRadioButtonUsedMemoryLocation.setSelected(true);
+        tableState=1;
+        styleTable(jTableMemory, com.formdev.flatlaf.FlatLaf.isLafDark(), 100, 60, 60);
 
 }//GEN-LAST:event_jRadioButtonUsedMemoryLocationActionPerformed
 
@@ -3351,6 +3352,7 @@ public int find=0;
        jRadioButtonUsedMemoryLocation.setSelected(false);
        jRadioButtonStoreMemoryLocation.setSelected(true);
        tableState=1;
+       styleTable(jTableMemory, com.formdev.flatlaf.FlatLaf.isLafDark(), 100, 60, 60);
 }//GEN-LAST:event_jRadioButtonStoreMemoryLocationActionPerformed
 
    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
@@ -3554,6 +3556,7 @@ public int find=0;
        jRadioButtonUsedMemoryLocation.setSelected(false);
        jRadioButtonShowAll.setSelected(true);
        tableState = 0;
+       styleTable(jTableMemory, com.formdev.flatlaf.FlatLaf.isLafDark(), 100, 60, 60);
    }
 
     public void setIOPort() {
@@ -3949,64 +3952,87 @@ public int find=0;
     public void styleTable(javax.swing.JTable table, boolean isDark, int col0Width, int col1Width, int defaultColWidth) {
         if (table == null) return;
         table.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
-        table.setRowHeight(22);
+        table.setRowHeight(25);
         table.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        table.setShowGrid(true);
+
+        java.awt.Color headerBg = isDark ? new java.awt.Color(0x28, 0x2A, 0x36) : new java.awt.Color(0xE2, 0xE8, 0xF0);
+        java.awt.Color headerFg = isDark ? new java.awt.Color(0xFF, 0xB7, 0x4D) : new java.awt.Color(0xC2, 0x41, 0x0C);
+        java.awt.Color bgEven   = isDark ? new java.awt.Color(0x1D, 0x1E, 0x23) : new java.awt.Color(0xFF, 0xFF, 0xFF);
+        java.awt.Color bgOdd    = isDark ? new java.awt.Color(0x24, 0x26, 0x2E) : new java.awt.Color(0xF8, 0xFA, 0xFC);
+        java.awt.Color gridColor= isDark ? new java.awt.Color(0x36, 0x38, 0x42) : new java.awt.Color(0xCB, 0xD5, 0xE1);
+        java.awt.Color textFg   = isDark ? new java.awt.Color(0xF0, 0xF0, 0xF0) : new java.awt.Color(0x0F, 0x17, 0x2A);
+        java.awt.Color selBg    = isDark ? new java.awt.Color(0x3E, 0x44, 0x52) : new java.awt.Color(0x25, 0x63, 0xEB);
+
+        table.setGridColor(gridColor);
+        table.setSelectionBackground(selBg);
+        table.setSelectionForeground(java.awt.Color.WHITE);
+
         if (table.getTableHeader() != null) {
-            table.getTableHeader().setPreferredSize(new java.awt.Dimension(table.getTableHeader().getPreferredSize().width, 22));
+            javax.swing.table.JTableHeader header = table.getTableHeader();
+            header.setPreferredSize(new java.awt.Dimension(header.getPreferredSize().width, 28));
+            header.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+            header.setBackground(headerBg);
+            header.setForeground(headerFg);
+
+            header.setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+                @Override
+                public java.awt.Component getTableCellRendererComponent(
+                        javax.swing.JTable t, Object val, boolean sel, boolean focus, int r, int c) {
+                    JLabel l = (JLabel) super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+                    l.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+                    l.setBackground(headerBg);
+                    l.setForeground(headerFg);
+                    l.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                    l.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                        javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 1, gridColor),
+                        javax.swing.BorderFactory.createEmptyBorder(3, 4, 3, 4)
+                    ));
+                    return l;
+                }
+            });
         }
         
         javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer() {
-            { setHorizontalAlignment(javax.swing.SwingConstants.CENTER); }
             @Override
             public java.awt.Component getTableCellRendererComponent(javax.swing.JTable t, Object val, boolean sel, boolean focus, int r, int c) {
-                if (val instanceof String) {
-                    val = ((String) val).trim();
+                if (val instanceof String) val = ((String) val).trim();
+                JLabel comp = (JLabel) super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+                comp.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                if (sel) {
+                    comp.setBackground(selBg);
+                    comp.setForeground(java.awt.Color.WHITE);
+                } else {
+                    comp.setBackground(r % 2 == 0 ? bgEven : bgOdd);
+                    comp.setForeground(textFg);
                 }
-                return super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+                return comp;
             }
         };
 
         javax.swing.table.DefaultTableCellRenderer leftRenderer = new javax.swing.table.DefaultTableCellRenderer() {
-            { setHorizontalAlignment(javax.swing.SwingConstants.LEFT); }
             @Override
             public java.awt.Component getTableCellRendererComponent(javax.swing.JTable t, Object val, boolean sel, boolean focus, int r, int c) {
-                if (val instanceof String) {
-                    val = ((String) val).trim();
+                if (val instanceof String) val = ((String) val).trim();
+                JLabel comp = (JLabel) super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+                comp.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+                comp.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 8, 0, 0));
+                if (sel) {
+                    comp.setBackground(selBg);
+                    comp.setForeground(java.awt.Color.WHITE);
+                } else {
+                    comp.setBackground(r % 2 == 0 ? bgEven : bgOdd);
+                    comp.setForeground(textFg);
                 }
-                return super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+                return comp;
             }
         };
 
         for (int i = 0; i < table.getColumnCount(); i++) {
-            if (i == 0) {
+            if (i == 0 && table != jTableInterrupt && table != jTableSIM && table != jTableRIM && table != jTableNoConverter) {
                 table.getColumnModel().getColumn(i).setCellRenderer(leftRenderer);
             } else {
                 table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-            }
-        }
-        
-        if (isDark) {
-            table.setBackground(new java.awt.Color(0x21, 0x22, 0x24));
-            table.setForeground(new java.awt.Color(0xE0, 0xE0, 0xE0));
-            table.setSelectionBackground(new java.awt.Color(0x00, 0x7A, 0xCC));
-            table.setSelectionForeground(java.awt.Color.WHITE);
-            table.setGridColor(new java.awt.Color(0x3E, 0x40, 0x42));
-            if (table.getTableHeader() != null) {
-                table.getTableHeader().setBackground(new java.awt.Color(0x2D, 0x2D, 0x2D));
-                table.getTableHeader().setForeground(new java.awt.Color(0xE0, 0xE0, 0xE0));
-                table.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
-            }
-        } else {
-            java.awt.Color sysBg = javax.swing.UIManager.getColor("Table.background");
-            java.awt.Color sysFg = javax.swing.UIManager.getColor("Table.foreground");
-            table.setBackground(sysBg != null ? sysBg : java.awt.Color.WHITE);
-            table.setForeground(sysFg != null ? sysFg : java.awt.Color.BLACK);
-            table.setSelectionBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
-            table.setSelectionForeground(javax.swing.UIManager.getColor("Table.selectionForeground"));
-            table.setGridColor(java.awt.Color.LIGHT_GRAY);
-            if (table.getTableHeader() != null) {
-                table.getTableHeader().setBackground(javax.swing.UIManager.getColor("TableHeader.background"));
-                table.getTableHeader().setForeground(javax.swing.UIManager.getColor("TableHeader.foreground"));
             }
         }
 
@@ -4027,13 +4053,18 @@ public int find=0;
             javax.swing.JViewport vp = (javax.swing.JViewport) table.getParent();
             if (vp.getParent() instanceof javax.swing.JScrollPane) {
                 javax.swing.JScrollPane sp = (javax.swing.JScrollPane) vp.getParent();
-                sp.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-                sp.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-                
-                int tableHeaderH = table.getTableHeader() != null ? table.getTableHeader().getPreferredSize().height : 22;
-                int reqHeight = table.getRowCount() * table.getRowHeight() + tableHeaderH + 2;
-                sp.setPreferredSize(new java.awt.Dimension(sp.getPreferredSize().width, reqHeight));
-                sp.setMinimumSize(new java.awt.Dimension(sp.getMinimumSize().width, reqHeight));
+                if (table == jTableMemory || table == jTableAssembler || table == jTablePort || table == jTable8255) {
+                    sp.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                    sp.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+                } else {
+                    sp.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                    sp.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+                    int tableHeaderH = table.getTableHeader() != null ? table.getTableHeader().getPreferredSize().height : 28;
+                    int reqHeight = table.getRowCount() * table.getRowHeight() + tableHeaderH + 4;
+                    sp.setPreferredSize(new java.awt.Dimension(sp.getPreferredSize().width, reqHeight));
+                    sp.setMinimumSize(new java.awt.Dimension(sp.getMinimumSize().width, reqHeight));
+                    sp.setMaximumSize(new java.awt.Dimension(sp.getMaximumSize().width, reqHeight));
+                }
             }
         }
     }
@@ -4041,29 +4072,66 @@ public int find=0;
     public void styleAssemblerTable(boolean isDark) {
         if (jTableAssembler == null) return;
         jTableAssembler.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
-        jTableAssembler.setRowHeight(24);
+        jTableAssembler.setRowHeight(25);
         jTableAssembler.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        jTableAssembler.setShowGrid(true);
 
-        if (isDark) {
-            jTableAssembler.setBackground(new java.awt.Color(0x21, 0x22, 0x24));
-            jTableAssembler.setForeground(new java.awt.Color(0xE0, 0xE0, 0xE0));
-            jTableAssembler.setSelectionBackground(new java.awt.Color(0x00, 0x7A, 0xCC));
-            jTableAssembler.setSelectionForeground(java.awt.Color.WHITE);
-            jTableAssembler.setGridColor(new java.awt.Color(0x3E, 0x40, 0x42));
-            if (jTableAssembler.getTableHeader() != null) {
-                jTableAssembler.getTableHeader().setBackground(new java.awt.Color(0x2D, 0x2D, 0x2D));
-                jTableAssembler.getTableHeader().setForeground(new java.awt.Color(0xE0, 0xE0, 0xE0));
-                jTableAssembler.getTableHeader().setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        java.awt.Color headerBg = isDark ? new java.awt.Color(0x28, 0x2A, 0x36) : new java.awt.Color(0xE2, 0xE8, 0xF0);
+        java.awt.Color headerFg = isDark ? new java.awt.Color(0xFF, 0xB7, 0x4D) : new java.awt.Color(0xC2, 0x41, 0x0C);
+        java.awt.Color bgEven   = isDark ? new java.awt.Color(0x1D, 0x1E, 0x23) : new java.awt.Color(0xFF, 0xFF, 0xFF);
+        java.awt.Color bgOdd    = isDark ? new java.awt.Color(0x24, 0x26, 0x2E) : new java.awt.Color(0xF8, 0xFA, 0xFC);
+        java.awt.Color gridColor= isDark ? new java.awt.Color(0x36, 0x38, 0x42) : new java.awt.Color(0xCB, 0xD5, 0xE1);
+        java.awt.Color textFg   = isDark ? new java.awt.Color(0xF0, 0xF0, 0xF0) : new java.awt.Color(0x0F, 0x17, 0x2A);
+        java.awt.Color selBg    = isDark ? new java.awt.Color(0x3E, 0x44, 0x52) : new java.awt.Color(0x25, 0x63, 0xEB);
+
+        jTableAssembler.setGridColor(gridColor);
+        jTableAssembler.setSelectionBackground(selBg);
+        jTableAssembler.setSelectionForeground(java.awt.Color.WHITE);
+
+        if (jTableAssembler.getTableHeader() != null) {
+            javax.swing.table.JTableHeader header = jTableAssembler.getTableHeader();
+            header.setPreferredSize(new java.awt.Dimension(header.getPreferredSize().width, 28));
+            header.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+            header.setBackground(headerBg);
+            header.setForeground(headerFg);
+
+            header.setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+                @Override
+                public java.awt.Component getTableCellRendererComponent(
+                        javax.swing.JTable t, Object val, boolean sel, boolean focus, int r, int c) {
+                    JLabel l = (JLabel) super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+                    l.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+                    l.setBackground(headerBg);
+                    l.setForeground(headerFg);
+                    l.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                    l.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                        javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 1, gridColor),
+                        javax.swing.BorderFactory.createEmptyBorder(3, 4, 3, 4)
+                    ));
+                    return l;
+                }
+            });
+        }
+
+        javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public java.awt.Component getTableCellRendererComponent(javax.swing.JTable t, Object val, boolean sel, boolean focus, int r, int c) {
+                if (val instanceof String) val = ((String) val).trim();
+                JLabel comp = (JLabel) super.getTableCellRendererComponent(t, val, sel, focus, r, c);
+                comp.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                if (sel) {
+                    comp.setBackground(selBg);
+                    comp.setForeground(java.awt.Color.WHITE);
+                } else {
+                    comp.setBackground(r % 2 == 0 ? bgEven : bgOdd);
+                    comp.setForeground(textFg);
+                }
+                return comp;
             }
-        } else {
-            jTableAssembler.setBackground(new java.awt.Color(176, 194, 158));
-            jTableAssembler.setForeground(java.awt.Color.BLACK);
-            jTableAssembler.setSelectionBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
-            jTableAssembler.setSelectionForeground(javax.swing.UIManager.getColor("Table.selectionForeground"));
-            if (jTableAssembler.getTableHeader() != null) {
-                jTableAssembler.getTableHeader().setBackground(javax.swing.UIManager.getColor("TableHeader.background"));
-                jTableAssembler.getTableHeader().setForeground(javax.swing.UIManager.getColor("TableHeader.foreground"));
-            }
+        };
+
+        for (int i = 0; i < jTableAssembler.getColumnCount(); i++) {
+            jTableAssembler.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
         if (jTableAssembler.getColumnModel().getColumnCount() >= 8) {
@@ -4075,6 +4143,15 @@ public int find=0;
             jTableAssembler.getColumnModel().getColumn(5).setPreferredWidth(55);  // Bytes
             jTableAssembler.getColumnModel().getColumn(6).setPreferredWidth(75);  // M-Cycles
             jTableAssembler.getColumnModel().getColumn(7).setPreferredWidth(75);  // T-States
+        }
+
+        if (jTableAssembler.getParent() instanceof javax.swing.JViewport) {
+            javax.swing.JViewport vp = (javax.swing.JViewport) jTableAssembler.getParent();
+            if (vp.getParent() instanceof javax.swing.JScrollPane) {
+                javax.swing.JScrollPane sp = (javax.swing.JScrollPane) vp.getParent();
+                sp.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                sp.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            }
         }
     }
 
