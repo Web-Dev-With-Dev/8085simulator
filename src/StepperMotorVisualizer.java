@@ -4,7 +4,8 @@ import java.awt.event.*;
 
 /**
  * 8085 Stepper Motor Physical Motion Visualizer
- * Real-time I/O Port driven motor simulator tracking Coil A, B, C, D phase excitation,
+ * Real-time I/O Port driven motor simulator tracking Coil A, B, C, D phase
+ * excitation,
  * rotor angle rotation, direction (CW/CCW), step count, and RPM calculation.
  */
 public class StepperMotorVisualizer extends JFrame {
@@ -85,13 +86,11 @@ public class StepperMotorVisualizer extends JFrame {
         rightPanel.setPreferredSize(new Dimension(320, 360));
         rightPanel.setBackground(new Color(0x1E, 0x29, 0x3B));
         rightPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(0x38, 0xBD, 0xF8)),
-                "Motor Phase Coils & Telemetry",
-                0, 0, new Font("Segoe UI", Font.BOLD, 12), new Color(0x38, 0xBD, 0xF8)
-            ),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(new Color(0x38, 0xBD, 0xF8)),
+                        "Motor Phase Coils & Telemetry",
+                        0, 0, new Font("Segoe UI", Font.BOLD, 12), new Color(0x38, 0xBD, 0xF8)),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(6, 6, 6, 6);
@@ -100,9 +99,10 @@ public class StepperMotorVisualizer extends JFrame {
         // Coil LEDs
         JPanel coilPanel = new JPanel(new GridLayout(2, 2, 8, 8));
         coilPanel.setOpaque(false);
-        coilPanel.setBorder(BorderFactory.createTitledBorder(null, "Phase Coils (Bits 0..3)", 0, 0, new Font("Segoe UI", Font.PLAIN, 11), Color.LIGHT_GRAY));
+        coilPanel.setBorder(BorderFactory.createTitledBorder(null, "Phase Coils (Bits 0..3)", 0, 0,
+                new Font("Segoe UI", Font.PLAIN, 11), Color.LIGHT_GRAY));
 
-        String[] coilNames = {"Coil A (Bit 0)", "Coil B (Bit 1)", "Coil C (Bit 2)", "Coil D (Bit 3)"};
+        String[] coilNames = { "Coil A (Bit 0)", "Coil B (Bit 1)", "Coil C (Bit 2)", "Coil D (Bit 3)" };
         for (int i = 0; i < 4; i++) {
             coilLeds[i] = new JLabel(coilNames[i], SwingConstants.CENTER);
             coilLeds[i].setFont(new Font("Consolas", Font.BOLD, 12));
@@ -112,20 +112,25 @@ public class StepperMotorVisualizer extends JFrame {
             coilLeds[i].setBorder(BorderFactory.createLineBorder(new Color(0x47, 0x55, 0x69)));
             coilPanel.add(coilLeds[i]);
         }
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
         rightPanel.add(coilPanel, gbc);
 
         // Direction & Step Stats
         lblDirection = createStatLabel("Direction: STOPPED", new Color(0xFB, 0xBF, 0x24));
         lblStepCount = createStatLabel("Total Steps: 0", new Color(0x38, 0xBD, 0xF8));
 
-        gbc.gridy = 1; rightPanel.add(lblDirection, gbc);
-        gbc.gridy = 2; rightPanel.add(lblStepCount, gbc);
+        gbc.gridy = 1;
+        rightPanel.add(lblDirection, gbc);
+        gbc.gridy = 2;
+        rightPanel.add(lblStepCount, gbc);
 
         // Preset Script Loaders
         JPanel presetPanel = new JPanel(new GridLayout(2, 1, 6, 6));
         presetPanel.setOpaque(false);
-        presetPanel.setBorder(BorderFactory.createTitledBorder(null, "Load Motor Control Scripts", 0, 0, new Font("Segoe UI", Font.BOLD, 11), Color.LIGHT_GRAY));
+        presetPanel.setBorder(BorderFactory.createTitledBorder(null, "Load Motor Control Scripts", 0, 0,
+                new Font("Segoe UI", Font.BOLD, 11), Color.LIGHT_GRAY));
 
         JButton btnCw = new JButton("Clockwise Rotation (CW)");
         btnCw.addActionListener(e -> loadMotorScript("CW"));
@@ -136,7 +141,8 @@ public class StepperMotorVisualizer extends JFrame {
         presetPanel.add(btnCw);
         presetPanel.add(btnCcw);
 
-        gbc.gridy = 3; rightPanel.add(presetPanel, gbc);
+        gbc.gridy = 3;
+        rightPanel.add(presetPanel, gbc);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, motorPanel, rightPanel);
         splitPane.setDividerLocation(420);
@@ -184,11 +190,13 @@ public class StepperMotorVisualizer extends JFrame {
 
     public void updateMotorState() {
         Matrix m = (assembler != null && assembler.matrix != null) ? assembler.matrix : this.matrix;
-        if (m == null || m.port == null) return;
+        if (m == null || m.port == null)
+            return;
 
         int phaseMask = motorPort < m.port.length ? (m.port[motorPort] & 0x0F) : 0;
 
-        lblStatus.setText(String.format("Port [%02XH]: 0x%02X | Active Coils: %d", motorPort, phaseMask, Integer.bitCount(phaseMask)));
+        lblStatus.setText(String.format("Port [%02XH]: 0x%02X | Active Coils: %d", motorPort, phaseMask,
+                Integer.bitCount(phaseMask)));
 
         // Update Coil LEDs
         Color activeGlow = new Color(0x00, 0xE6, 0x76);
@@ -225,71 +233,76 @@ public class StepperMotorVisualizer extends JFrame {
 
     private boolean isClockwiseStep(int prev, int curr) {
         // Wave drive: 1->2->4->8, Full step: 3->6->C->9
-        return (prev == 1 && curr == 2) || (prev == 2 && curr == 4) || (prev == 4 && curr == 8) || (prev == 8 && curr == 1) ||
-               (prev == 3 && curr == 6) || (prev == 6 && curr == 12) || (prev == 12 && curr == 9) || (prev == 9 && curr == 3);
+        return (prev == 1 && curr == 2) || (prev == 2 && curr == 4) || (prev == 4 && curr == 8)
+                || (prev == 8 && curr == 1) ||
+                (prev == 3 && curr == 6) || (prev == 6 && curr == 12) || (prev == 12 && curr == 9)
+                || (prev == 9 && curr == 3);
     }
 
     private boolean isCounterClockwiseStep(int prev, int curr) {
-        return (prev == 8 && curr == 4) || (prev == 4 && curr == 2) || (prev == 2 && curr == 1) || (prev == 1 && curr == 8) ||
-               (prev == 9 && curr == 12) || (prev == 12 && curr == 6) || (prev == 6 && curr == 3) || (prev == 3 && curr == 9);
+        return (prev == 8 && curr == 4) || (prev == 4 && curr == 2) || (prev == 2 && curr == 1)
+                || (prev == 1 && curr == 8) ||
+                (prev == 9 && curr == 12) || (prev == 12 && curr == 6) || (prev == 6 && curr == 3)
+                || (prev == 3 && curr == 9);
     }
 
     private void loadMotorScript(String type) {
-        if (assembler == null) return;
+        if (assembler == null)
+            return;
 
         String code = "";
         if ("CW".equals(type)) {
             code = "; --- 8085 Stepper Motor Clockwise Rotation ---\n" +
-                   "; Out Port: 00H | Wave Drive Sequence: 01H -> 02H -> 04H -> 08H\n\n" +
-                   "START: MVI A,01H    ; Coil A\n" +
-                   "       OUT 00H\n" +
-                   "       CALL DELAY\n\n" +
-                   "       MVI A,02H    ; Coil B\n" +
-                   "       OUT 00H\n" +
-                   "       CALL DELAY\n\n" +
-                   "       MVI A,04H    ; Coil C\n" +
-                   "       OUT 00H\n" +
-                   "       CALL DELAY\n\n" +
-                   "       MVI A,08H    ; Coil D\n" +
-                   "       OUT 00H\n" +
-                   "       CALL DELAY\n\n" +
-                   "       JMP START     ; Repeat Rotation\n\n" +
-                   "; --- Delay Subroutine ---\n" +
-                   "DELAY: LXI B,0005H\n" +
-                   "D_LOOP: DCX B\n" +
-                   "       MOV A,B\n" +
-                   "       ORA C\n" +
-                   "       JNZ D_LOOP\n" +
-                   "       RET\n";
+                    "; Out Port: 00H | Wave Drive Sequence: 01H -> 02H -> 04H -> 08H\n\n" +
+                    "START: MVI A,01H    ; Coil A\n" +
+                    "       OUT 00H\n" +
+                    "       CALL DELAY\n\n" +
+                    "       MVI A,02H    ; Coil B\n" +
+                    "       OUT 00H\n" +
+                    "       CALL DELAY\n\n" +
+                    "       MVI A,04H    ; Coil C\n" +
+                    "       OUT 00H\n" +
+                    "       CALL DELAY\n\n" +
+                    "       MVI A,08H    ; Coil D\n" +
+                    "       OUT 00H\n" +
+                    "       CALL DELAY\n\n" +
+                    "       JMP START     ; Repeat Rotation\n\n" +
+                    "; --- Delay Subroutine ---\n" +
+                    "DELAY: LXI B,0005H\n" +
+                    "D_LOOP: DCX B\n" +
+                    "       MOV A,B\n" +
+                    "       ORA C\n" +
+                    "       JNZ D_LOOP\n" +
+                    "       RET\n";
         } else if ("CCW".equals(type)) {
             code = "; --- 8085 Stepper Motor Counter-Clockwise Rotation ---\n" +
-                   "; Out Port: 00H | Wave Drive Sequence: 08H -> 04H -> 02H -> 01H\n\n" +
-                   "START: MVI A,08H    ; Coil D\n" +
-                   "       OUT 00H\n" +
-                   "       CALL DELAY\n\n" +
-                   "       MVI A,04H    ; Coil C\n" +
-                   "       OUT 00H\n" +
-                   "       CALL DELAY\n\n" +
-                   "       MVI A,02H    ; Coil B\n" +
-                   "       OUT 00H\n" +
-                   "       CALL DELAY\n\n" +
-                   "       MVI A,01H    ; Coil A\n" +
-                   "       OUT 00H\n" +
-                   "       CALL DELAY\n\n" +
-                   "       JMP START     ; Repeat Rotation\n\n" +
-                   "; --- Delay Subroutine ---\n" +
-                   "DELAY: LXI B,0005H\n" +
-                   "D_LOOP: DCX B\n" +
-                   "       MOV A,B\n" +
-                   "       ORA C\n" +
-                   "       JNZ D_LOOP\n" +
-                   "       RET\n";
+                    "; Out Port: 00H | Wave Drive Sequence: 08H -> 04H -> 02H -> 01H\n\n" +
+                    "START: MVI A,08H    ; Coil D\n" +
+                    "       OUT 00H\n" +
+                    "       CALL DELAY\n\n" +
+                    "       MVI A,04H    ; Coil C\n" +
+                    "       OUT 00H\n" +
+                    "       CALL DELAY\n\n" +
+                    "       MVI A,02H    ; Coil B\n" +
+                    "       OUT 00H\n" +
+                    "       CALL DELAY\n\n" +
+                    "       MVI A,01H    ; Coil A\n" +
+                    "       OUT 00H\n" +
+                    "       CALL DELAY\n\n" +
+                    "       JMP START     ; Repeat Rotation\n\n" +
+                    "; --- Delay Subroutine ---\n" +
+                    "DELAY: LXI B,0005H\n" +
+                    "D_LOOP: DCX B\n" +
+                    "       MOV A,B\n" +
+                    "       ORA C\n" +
+                    "       JNZ D_LOOP\n" +
+                    "       RET\n";
         }
 
         assembler.jTextAreaAssemblyLanguageEditor.setText(code);
         JOptionPane.showMessageDialog(this,
-            "Stepper Motor Assembly Script loaded into editor!\nClick 'Assemble' (F9) and 'Forward' (F8) to watch physical motor rotation.",
-            "Preset Stepper Script Loaded", JOptionPane.INFORMATION_MESSAGE);
+                "Stepper Motor Assembly Script loaded into editor!\nClick 'Assemble' (F9) and 'Forward' (F8) to watch physical motor rotation.",
+                "Preset Stepper Script Loaded", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**

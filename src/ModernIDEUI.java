@@ -56,7 +56,13 @@ public class ModernIDEUI extends JPanel {
     
     private JLabel statusStateBadge;
     private JLabel statusInfoLabel;
-    
+
+    // Tab bar state (updated by document listener and file load)
+    private JPanel activeTab;
+    private JLabel tabTitle;
+    private JLabel unsavedDot;
+
+    private JLabel debuggerExplainerLabel;
     private String activeSidebarItem = "Editor";
     private Map<String, JPanel> sidebarButtons = new HashMap<>();
 
@@ -151,18 +157,21 @@ public class ModernIDEUI extends JPanel {
         bar.setBackground(COLOR_BG_TOOLBAR);
         bar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COLOR_CARD_BORDER));
 
-        bar.add(createToolButton("New", "📄", e -> {
-            assembler.jTextAreaAssemblyLanguageEditor.setText("; New 8085 Program\n\n");
+        bar.add(createToolButton("New", "\uD83D\uDCC4", e -> {
+            assembler.jTextAreaAssemblyLanguageEditor.setText("; New 8085 Program\n\nMVI A, 00H\nHLT\n");
             assembler.textEditor.colorEditor();
             showEditorView();
         }));
-        bar.add(createToolButton("Open", "📁", e -> {
+        bar.add(createToolButton("Open", "\uD83D\uDCC1", e -> {
             if (assembler.jMenuItemLoad_Assembly_Language_code != null) {
                 assembler.jMenuItemLoad_Assembly_Language_code.doClick();
             }
-            showEditorView();
+            // Show editor after a brief delay to let file load dialog finish
+            javax.swing.Timer t = new javax.swing.Timer(500, ev -> showEditorView());
+            t.setRepeats(false);
+            t.start();
         }));
-        bar.add(createToolButton("Save", "💾", e -> {
+        bar.add(createToolButton("Save", "\uD83D\uDCBE", e -> {
             if (assembler.jMenuItemSave_Assembly_Language_code != null) {
                 assembler.jMenuItemSave_Assembly_Language_code.doClick();
             }
@@ -174,53 +183,81 @@ public class ModernIDEUI extends JPanel {
         sep.setForeground(COLOR_CARD_BORDER);
         bar.add(sep);
 
-        bar.add(createToolButton("Assemble", "⚙", e -> {
+        bar.add(createToolButton("Assemble", "\u2699", e -> {
             showEditorView();
-            if (assembler.jButtonAssemble != null) {
-                assembler.jButtonAssemble.doClick();
-            }
+            // Use invokeLater so editor is visible before assembling
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                if (assembler.jButtonAssemble != null) {
+                    assembler.jButtonAssemble.doClick();
+                }
+            });
         }));
 
         // Run Button (Primary Blue Accent Button)
-        JButton btnRun = new JButton("Run ▾");
+        JButton btnRun = new JButton("\u25B6 Run");
         btnRun.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnRun.setForeground(COLOR_TEXT_PRIMARY);
         btnRun.setBackground(COLOR_PRIMARY_BLUE);
         btnRun.setFocusPainted(false);
         btnRun.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 14));
         btnRun.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRun.setOpaque(true);
         btnRun.addActionListener(e -> {
             showEditorView();
+            // jButtonRun may be hidden but still actionable via doClick
             if (assembler.jButtonRun != null) {
                 assembler.jButtonRun.doClick();
+            }
+            if (assembler.modernIDEUI != null) {
+                assembler.modernIDEUI.setExecutionState("RUNNING");
             }
         });
         bar.add(btnRun);
 
-        bar.add(createToolButton("Step", "⏯", e -> {
-            showEditorView();
+        bar.add(createToolButton("Step", "\u23EF", e -> {
+            showDebuggerView();
             if (assembler.jButtonStep != null) {
                 assembler.jButtonStep.doClick();
             }
         }));
-        bar.add(createToolButton("Pause", "⏸", e -> {
+
+        bar.add(createToolButton("Step Fwd", "\u23ED", e -> {
+            showDebuggerView();
+            if (assembler.jButtonForward != null) {
+                assembler.jButtonForward.doClick();
+            }
+        }));
+
+        bar.add(createToolButton("Step Back", "\u23EE", e -> {
+            showDebuggerView();
+            if (assembler.jButtonBackward != null) {
+                assembler.jButtonBackward.doClick();
+            }
+        }));
+        bar.add(createToolButton("Pause", "\u23F8", e -> {
+            // Set text to Pause BEFORE doClick so the action handler reads it correctly
             if (assembler.jButtonStop != null) {
+                assembler.jButtonStop.setVisible(true);
                 assembler.jButtonStop.setText("Pause");
                 assembler.jButtonStop.doClick();
             }
+            setExecutionState("PAUSED");
         }));
-        bar.add(createToolButton("Stop", "⏹", e -> {
+        bar.add(createToolButton("Stop", "\u23F9", e -> {
             if (assembler.jButtonStop != null) {
+                assembler.jButtonStop.setVisible(true);
                 assembler.jButtonStop.setText("Stop");
                 assembler.jButtonStop.doClick();
             }
+            setExecutionState("STOPPED");
         }));
-        bar.add(createToolButton("Reset", "↺", e -> {
+        bar.add(createToolButton("Reset", "\u21BA", e -> {
             if (assembler.jMenuItemClearMemory != null) {
                 assembler.jMenuItemClearMemory.doClick();
             }
+            setExecutionState("STOPPED");
         }));
-        bar.add(createToolButton("Autocorrect", "✨", e -> {
+        bar.add(createToolButton("Autocorrect", "\u2728", e -> {
             showEditorView();
             if (assembler.jButtonAutocorrect != null) {
                 assembler.jButtonAutocorrect.doClick();
@@ -230,11 +267,40 @@ public class ModernIDEUI extends JPanel {
         return bar;
     }
 
+    /** Update the status badge color/text from outside (called by Assembler on state changes) */
+    public void setExecutionState(String state) {
+        if (statusStateBadge == null) return;
+        switch (state) {
+            case "RUNNING":
+                statusStateBadge.setText(" RUNNING ");
+                statusStateBadge.setBackground(COLOR_GREEN_ACCENT);
+                break;
+            case "PAUSED":
+                statusStateBadge.setText(" PAUSED  ");
+                statusStateBadge.setBackground(COLOR_AMBER_ACCENT);
+                break;
+            default: // STOPPED
+                statusStateBadge.setText(" STOPPED ");
+                statusStateBadge.setBackground(COLOR_PRIMARY_BLUE);
+                break;
+        }
+        statusStateBadge.repaint();
+    }
+
+    /**
+     * Creates a toolbar button with a plain Unicode/text icon and label.
+     * Uses a two-component approach: icon label (Segoe UI Emoji) + text label, so
+     * icons always render correctly regardless of LAF theme changes.
+     */
     private JButton createToolButton(String text, String icon, java.awt.event.ActionListener listener) {
-        JButton btn = new JButton(icon + " " + text);
+        // Use HTML so Swing can render the icon in emoji-capable font and text in regular font
+        String htmlLabel = "<html><span style='font-family:Segoe UI Emoji;font-size:11pt;'>" + icon +
+                           "</span>&nbsp;" + text + "</html>";
+        JButton btn = new JButton(htmlLabel);
         btn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btn.setForeground(COLOR_TEXT_PRIMARY);
         btn.setBackground(COLOR_BG_CARD);
+        btn.setOpaque(true);
         btn.setFocusPainted(false);
         btn.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(COLOR_CARD_BORDER, 1, true),
@@ -255,16 +321,17 @@ public class ModernIDEUI extends JPanel {
         sidebar.setPreferredSize(new Dimension(68, 600));
         sidebar.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, COLOR_CARD_BORDER));
 
+        // Each item: { id, unicode icon char }
         String[][] items = {
-                {"Editor", "📝"},
-                {"Registers", "🔲"},
-                {"Memory", "▦"},
-                {"Devices", "🔌"},
-                {"Subroutine", "🌿"},
-                {"Interrupts", "🔔"},
-                {"I/O Port", "⚡"},
-                {"Disassembler", "{}"},
-                {"Settings", "⚙"}
+                {"Editor",       "\u270F"},  // pencil
+                {"Registers",    "\uD83D\uDDD3"},  // table
+                {"Memory",       "\uD83D\uDCBE"},  // disk
+                {"Devices",      "\uD83D\uDD0C"},  // plug
+                {"Subroutine",   "\uD83D\uDD00"},  // arrows
+                {"Interrupts",   "\uD83D\uDD14"},  // bell
+                {"I/O Port",     "\u26A1"},  // bolt
+                {"Disassembler", "\u007B\u007D"}, // {}
+                {"Settings",     "\u2699"}   // gear
         };
 
         for (String[] item : items) {
@@ -272,24 +339,32 @@ public class ModernIDEUI extends JPanel {
             String icon = item[1];
 
             JPanel btn = new JPanel(new BorderLayout());
-            btn.setMaximumSize(new Dimension(60, 54));
-            btn.setPreferredSize(new Dimension(60, 54));
+            btn.setMaximumSize(new Dimension(68, 58));
+            btn.setPreferredSize(new Dimension(68, 58));
             btn.setOpaque(true);
             btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
             boolean isActive = id.equals(activeSidebarItem);
             btn.setBackground(isActive ? COLOR_PRIMARY_BLUE : COLOR_BG_SIDEBAR);
 
+            // Icon in emoji font so it renders properly
             JLabel lblIcon = new JLabel(icon, SwingConstants.CENTER);
-            lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
+            lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
             lblIcon.setForeground(COLOR_TEXT_PRIMARY);
+            lblIcon.setOpaque(false);
 
             JLabel lblText = new JLabel(id, SwingConstants.CENTER);
             lblText.setFont(new Font("Segoe UI", Font.PLAIN, 9));
             lblText.setForeground(isActive ? COLOR_TEXT_PRIMARY : COLOR_TEXT_MUTED);
+            lblText.setOpaque(false);
 
-            btn.add(lblIcon, BorderLayout.CENTER);
-            btn.add(lblText, BorderLayout.SOUTH);
+            JPanel innerPanel = new JPanel(new BorderLayout(0, 2));
+            innerPanel.setOpaque(false);
+            innerPanel.add(lblIcon, BorderLayout.CENTER);
+            innerPanel.add(lblText, BorderLayout.SOUTH);
+            innerPanel.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 2));
+
+            btn.add(innerPanel, BorderLayout.CENTER);
 
             btn.addMouseListener(new MouseAdapter() {
                 @Override
@@ -298,11 +373,23 @@ public class ModernIDEUI extends JPanel {
                     updateSidebarSelection();
                     handleSidebarAction(id);
                 }
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    if (!id.equals(activeSidebarItem)) {
+                        btn.setBackground(new Color(0x1E, 0x20, 0x27));
+                    }
+                }
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    if (!id.equals(activeSidebarItem)) {
+                        btn.setBackground(COLOR_BG_SIDEBAR);
+                    }
+                }
             });
 
             sidebarButtons.put(id, btn);
             sidebar.add(btn);
-            sidebar.add(Box.createVerticalStrut(4));
+            sidebar.add(Box.createVerticalStrut(2));
         }
 
         return sidebar;
@@ -311,10 +398,21 @@ public class ModernIDEUI extends JPanel {
     private void updateSidebarSelection() {
         for (Map.Entry<String, JPanel> entry : sidebarButtons.entrySet()) {
             boolean active = entry.getKey().equals(activeSidebarItem);
-            entry.getValue().setBackground(active ? COLOR_PRIMARY_BLUE : COLOR_BG_SIDEBAR);
-            for (Component c : entry.getValue().getComponents()) {
-                if (c instanceof JLabel && c.getFont().getSize() == 9) {
-                    c.setForeground(active ? COLOR_TEXT_PRIMARY : COLOR_TEXT_MUTED);
+            JPanel sideBtn = entry.getValue();
+            sideBtn.setBackground(active ? COLOR_PRIMARY_BLUE : COLOR_BG_SIDEBAR);
+            // Update the inner panel and its children labels
+            for (Component c : sideBtn.getComponents()) {
+                if (c instanceof JPanel) { // inner panel
+                    for (Component inner : ((JPanel)c).getComponents()) {
+                        if (inner instanceof JLabel) {
+                            JLabel lbl = (JLabel)inner;
+                            if (lbl.getFont().getSize() == 9) {
+                                lbl.setForeground(active ? COLOR_TEXT_PRIMARY : COLOR_TEXT_MUTED);
+                            } else {
+                                lbl.setForeground(COLOR_TEXT_PRIMARY);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -327,26 +425,34 @@ public class ModernIDEUI extends JPanel {
                 break;
             case "Registers":
                 showEditorView();
+                assembler.showRegistersPanel();
                 break;
             case "Memory":
                 showEditorView();
+                assembler.showMemoryPanel();
                 break;
             case "Devices":
                 showEditorView();
+                assembler.showDevicesPanel();
                 break;
             case "Subroutine":
                 showEditorView();
+                assembler.openDelaySubroutine();
                 break;
             case "Interrupts":
                 showEditorView();
+                assembler.openInterruptSubroutine();
                 break;
             case "I/O Port":
                 showEditorView();
+                assembler.openIOPortPanel();
                 break;
             case "Disassembler":
                 showEditorView();
+                assembler.openDisassemblerTab();
                 break;
             case "Settings":
+                assembler.openSettings();
                 break;
             default:
                 showEditorView();
@@ -371,11 +477,13 @@ public class ModernIDEUI extends JPanel {
         activeTab.setBackground(COLOR_BG_DARK);
         activeTab.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, COLOR_PRIMARY_BLUE));
 
-        JLabel dot = new JLabel("● ");
-        dot.setFont(new Font("Segoe UI", Font.BOLD, 10));
-        dot.setForeground(COLOR_CYAN_ACCENT);
+        // Unsaved dot — shown when editor has unsaved content
+        unsavedDot = new JLabel("● ");
+        unsavedDot.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        unsavedDot.setForeground(COLOR_CYAN_ACCENT);
+        unsavedDot.setVisible(false); // hidden until something is typed
 
-        JLabel tabTitle = new JLabel("untitled.asm ");
+        tabTitle = new JLabel("untitled.asm ");
         tabTitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         tabTitle.setForeground(COLOR_TEXT_PRIMARY);
 
@@ -383,8 +491,27 @@ public class ModernIDEUI extends JPanel {
         closeBtn.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         closeBtn.setForeground(COLOR_TEXT_MUTED);
         closeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        // Close = clear editor, reset to untitled, hide unsaved dot, show welcome card
+        closeBtn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseReleased(MouseEvent e) {
+                if (javax.swing.SwingUtilities.isLeftMouseButton(e)) {
+                    int confirm = javax.swing.JOptionPane.showConfirmDialog(
+                        assembler,
+                        "Close this file? Unsaved changes will be lost.",
+                        "Close File", javax.swing.JOptionPane.YES_NO_OPTION);
+                    if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+                        assembler.jTextAreaAssemblyLanguageEditor.setText("");
+                        tabTitle.setText("untitled.asm ");
+                        if (unsavedDot != null) unsavedDot.setVisible(false);
+                        showWelcomeView();
+                    }
+                }
+            }
+            @Override public void mouseEntered(MouseEvent e) { closeBtn.setForeground(COLOR_TEXT_PRIMARY); }
+            @Override public void mouseExited(MouseEvent e)  { closeBtn.setForeground(COLOR_TEXT_MUTED);   }
+        });
 
-        activeTab.add(dot);
+        activeTab.add(unsavedDot);
         activeTab.add(tabTitle);
         activeTab.add(closeBtn);
         tabBar.add(activeTab);
@@ -396,24 +523,71 @@ public class ModernIDEUI extends JPanel {
         centerEditorContainer = new JPanel(editorCardLayout);
         centerEditorContainer.setBackground(COLOR_BG_DARK);
 
-        // 1. Welcome View (Matches Reference Image)
+        // 1. Welcome View
         welcomeViewPanel = createWelcomeView();
         centerEditorContainer.add(welcomeViewPanel, "WELCOME");
 
-        // 2. Code Editor View (TextEditor component)
+        // 2. Code Editor View
+        // Re-use the NetBeans-configured scroll pane (jScrollPane9) directly.
+        // This is much safer as it has all the original layout bounds, borders,
+        // and lines rendering logic set up correctly.
         codeEditorPanel = new JPanel(new BorderLayout());
-        codeEditorPanel.setBackground(COLOR_BG_DARK);
-        if (assembler.textEditor != null && assembler.textEditor.jScrollPane1 != null) {
-            codeEditorPanel.add(assembler.textEditor.jScrollPane1, BorderLayout.CENTER);
+        codeEditorPanel.setBackground(new Color(0x1E, 0x1E, 0x1E));
+
+        if (assembler.getEditorScrollPane() != null) {
+            javax.swing.JScrollPane editorScroll = assembler.getEditorScrollPane();
+            editorScroll.setBorder(null);
+            editorScroll.setBackground(new Color(0x1E, 0x1E, 0x1E));
+            editorScroll.getViewport().setBackground(new Color(0x1E, 0x1E, 0x1E));
+
+            if (assembler.textEditor != null && assembler.textEditor.jTextPane1 != null) {
+                // Ensure text pane is editable and styled correctly
+                assembler.textEditor.jTextPane1.setBackground(new Color(0x1E, 0x1E, 0x1E));
+                assembler.textEditor.jTextPane1.setForeground(new Color(0xD4, 0xD4, 0xD4));
+                assembler.textEditor.jTextPane1.setCaretColor(Color.WHITE);
+                assembler.textEditor.jTextPane1.setEditable(true);
+
+                // Track document changes to show/hide the unsaved dot
+                assembler.textEditor.jTextPane1.getDocument().addDocumentListener(
+                    new javax.swing.event.DocumentListener() {
+                        public void insertUpdate(javax.swing.event.DocumentEvent e)  { markUnsaved(); }
+                        public void removeUpdate(javax.swing.event.DocumentEvent e)  { markUnsaved(); }
+                        public void changedUpdate(javax.swing.event.DocumentEvent e) {}
+                        private void markUnsaved() {
+                            if (unsavedDot != null) unsavedDot.setVisible(true);
+                        }
+                    });
+            }
+
+            codeEditorPanel.add(editorScroll, BorderLayout.CENTER);
         }
         centerEditorContainer.add(codeEditorPanel, "EDITOR");
 
-        // Initially show Welcome view if text editor is blank, otherwise show Editor
-        if (assembler.jTextAreaAssemblyLanguageEditor.getText().trim().isEmpty()) {
-            editorCardLayout.show(centerEditorContainer, "WELCOME");
-        } else {
-            editorCardLayout.show(centerEditorContainer, "EDITOR");
+        // 3. Step Debugger View
+        JPanel debuggerPanel = new JPanel(new BorderLayout());
+        debuggerPanel.setBackground(COLOR_BG_DARK);
+
+        if (assembler.getDebuggerScrollPane() != null) {
+            javax.swing.JScrollPane debugScroll = assembler.getDebuggerScrollPane();
+            debugScroll.setBorder(null);
+            debugScroll.setBackground(COLOR_BG_DARK);
+            debugScroll.getViewport().setBackground(COLOR_BG_DARK);
+            
+            // Add a large label at the top for the Step Explainer
+            debuggerExplainerLabel = new JLabel("<html><b>Step Explainer:</b> Click 'Step Fwd' to begin execution trace.</html>");
+            debuggerExplainerLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            debuggerExplainerLabel.setForeground(COLOR_CYAN_ACCENT);
+            debuggerExplainerLabel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+            debuggerExplainerLabel.setBackground(COLOR_BG_CARD);
+            debuggerExplainerLabel.setOpaque(true);
+            
+            debuggerPanel.add(debuggerExplainerLabel, BorderLayout.NORTH);
+            debuggerPanel.add(debugScroll, BorderLayout.CENTER);
         }
+        centerEditorContainer.add(debuggerPanel, "DEBUGGER");
+
+        // Always start on Editor view
+        editorCardLayout.show(centerEditorContainer, "EDITOR");
 
         container.add(centerEditorContainer, BorderLayout.CENTER);
         return container;
@@ -423,6 +597,34 @@ public class ModernIDEUI extends JPanel {
         if (editorCardLayout != null && centerEditorContainer != null) {
             editorCardLayout.show(centerEditorContainer, "EDITOR");
         }
+        // Re-focus the text pane so user can type immediately
+        if (assembler.textEditor != null && assembler.textEditor.jTextPane1 != null) {
+            assembler.textEditor.jTextPane1.requestFocusInWindow();
+        }
+    }
+
+    public void showDebuggerView() {
+        if (editorCardLayout != null && centerEditorContainer != null) {
+            editorCardLayout.show(centerEditorContainer, "DEBUGGER");
+        }
+    }
+
+    public void updateStepExplainer(String text) {
+        if (debuggerExplainerLabel != null) {
+            debuggerExplainerLabel.setText("<html><b>Step Explainer:</b> " + text + "</html>");
+        }
+    }
+
+    /** Update the tab title (e.g. when a file is opened or saved) */
+    public void setTabTitle(String filename) {
+        if (tabTitle != null) {
+            tabTitle.setText(filename + " ");
+        }
+    }
+
+    /** Mark the current file as saved (hide unsaved dot) */
+    public void markSaved() {
+        if (unsavedDot != null) unsavedDot.setVisible(false);
     }
 
     public void showWelcomeView() {
@@ -1004,6 +1206,72 @@ public class ModernIDEUI extends JPanel {
     /**
      * Synchronize and Refresh UI components with underlying simulator state (Matrix / Assembler)
      */
+    /**
+     * Override updateUI so that FlatLaf theme changes do NOT reset our
+     * hardcoded dark color scheme on cards, labels, and panels.
+     */
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        // After theme update, re-assert our dark background colors
+        if (COLOR_BG_DARK != null) {
+            setBackground(COLOR_BG_DARK);
+        }
+        // Re-apply dark background to all known child panels / labels
+        reapplyColorScheme();
+    }
+
+    /**
+     * Re-applies our hardcoded color scheme to all components
+     * after an LAF update (e.g. after a theme switch).
+     */
+    public void reapplyColorScheme() {
+        try {
+            setBackground(COLOR_BG_DARK);
+            // Re-force the text editor background
+            if (assembler != null && assembler.textEditor != null && assembler.textEditor.jTextPane1 != null) {
+                assembler.textEditor.jTextPane1.setBackground(new Color(0x1E, 0x1E, 0x1E));
+                assembler.textEditor.jTextPane1.setForeground(new Color(0xD4, 0xD4, 0xD4));
+                assembler.textEditor.jTextPane1.setCaretColor(Color.WHITE);
+                if (assembler.textEditor.jScrollPane1 != null) {
+                    assembler.textEditor.jScrollPane1.setBackground(new Color(0x1E, 0x1E, 0x1E));
+                    assembler.textEditor.jScrollPane1.getViewport().setBackground(new Color(0x1E, 0x1E, 0x1E));
+                }
+            }
+            // Re-style register value labels
+            if (regValLabels != null) {
+                for (JLabel lbl : regValLabels) {
+                    if (lbl != null) {
+                        lbl.setForeground(COLOR_TEXT_PRIMARY);
+                        lbl.setBackground(COLOR_BG_CARD);
+                    }
+                }
+            }
+            if (regRowPanels != null) {
+                for (int i = 0; i < regRowPanels.length; i++) {
+                    if (regRowPanels[i] != null) {
+                        regRowPanels[i].setBackground(i == 0 ? COLOR_ROW_ACTIVE : COLOR_BG_CARD);
+                    }
+                }
+            }
+            // Re-apply status badge colors
+            if (statusStateBadge != null) {
+                statusStateBadge.setForeground(COLOR_TEXT_PRIMARY);
+                statusStateBadge.setBackground(COLOR_PRIMARY_BLUE);
+                statusStateBadge.setOpaque(true);
+            }
+            // Re-apply flag circles
+            if (flagCircles != null) {
+                for (JLabel lbl : flagCircles) {
+                    if (lbl != null) {
+                        lbl.setBackground(COLOR_CARD_BORDER);
+                        lbl.setForeground(COLOR_TEXT_MUTED);
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
     public void refreshData() {
         if (assembler == null || assembler.matrix == null) return;
         Matrix m = assembler.matrix;

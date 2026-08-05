@@ -1,1 +1,35 @@
 true
+; --- 8085 16x2 LCD Hello World ---
+; Cmd Port: 00H | Data Port: 01H
+
+START: MVI A,01H    ; Clear Display
+       OUT 00H
+       MVI A,80H    ; Line 1, Pos 0
+       OUT 00H
+
+       ; Print 'H' 'E' 'L' 'L' 'O'
+       MVI A,48H    ; 'H'
+       OUT 01H
+       MVI A,45H    ; 'E'
+       OUT 01H
+       MVI A,4CH    ; 'L'
+       OUT 01H
+       MVI A,4CH    ; 'L'
+       OUT 01H
+       MVI A,4FH    ; 'O'
+       OUT 01H
+
+       ; Print ' ' 'W' 'O' 'R' 'L' 'D'
+       MVI A,20H    ; ' '
+       OUT 01H
+       MVI A,57H    ; 'W'
+       OUT 01H
+       MVI A,4FH    ; 'O'
+       OUT 01H
+       MVI A,52H    ; 'R'
+       OUT 01H
+       MVI A,4CH    ; 'L'
+       OUT 01H
+       MVI A,44H    ; 'D'
+       OUT 01H
+       HLT

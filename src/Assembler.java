@@ -212,6 +212,10 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
 
                 jTextAreaAssemblyLanguageEditor.setText(s);
                 textEditor.colorEditor();
+                // Show the code editor panel after loading a sample
+                if (modernIDEUI != null) {
+                    modernIDEUI.showEditorView();
+                }
             } else {
                 javax.swing.JOptionPane.showMessageDialog(this, "Could not locate sample file: " + progName + ".asm", "Sample Load Error", javax.swing.JOptionPane.ERROR_MESSAGE);
             }
@@ -2081,6 +2085,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         jLabelErrorHang.setVisible(false);
         stop  = false;
         pause = false;
+        if (modernIDEUI != null) modernIDEUI.setExecutionState("RUNNING");
         ExecutorService exec = Executors.newCachedThreadPool();
         exec.execute(this);
 
@@ -2185,6 +2190,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         pause=false;
         if (lintStatusLabel != null)
             lintStatusLabel.setText("  Stopped ");
+        if (modernIDEUI != null) modernIDEUI.setExecutionState("STOPPED");
         File f=new File("cache");
         deleteDir(f);
       }
@@ -2219,7 +2225,10 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                if (comments != null && matrix.select < comments.length) {
                    jLabelError.setText(comments[matrix.select]);
                }
-               jLabelComment.setText(matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString())));
+               String stepExpl = matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString()));
+               jLabelComment.setText(stepExpl);
+               if (lintStatusLabel != null) lintStatusLabel.setText("  Step Explainer: " + stepExpl + " ");
+               if (modernIDEUI != null) modernIDEUI.updateStepExplainer(stepExpl);
            }
        } catch(Exception e){}
        set();
@@ -2495,6 +2504,17 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
        jMenuItemClearMemoryActionPerformed(evt);
        jButtonStop.setText("Stop");
        jButtonStop.doClick();
+
+       // Fix execution bounds: Ensure program starts loading at 2000H and execution begins there
+       if (jTextFieldMemBegin.getText().equals("0000") && jTextFieldBeginFrom.getText().equals("C000")) {
+           jTextFieldMemBegin.setText("2000");
+           jTextFieldBeginFrom.setText("2000");
+       } else {
+           jTextFieldBeginFrom.setText(jTextFieldMemBegin.getText());
+       }
+       jTextFieldMemStop.setText("FFFF");
+       matrix.stopAddress = 65535;
+
        for(int i=0;i<65536;i++){matrix.memory[i]=0;
        matrix.label[i]="";}
        setMemory();
@@ -2907,6 +2927,8 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                    jLabelComment.setVisible(true);
                    String stepExpl = matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString()));
                    jLabelComment.setText("<html><b> Step Explainer:</b> " + stepExpl + "</html>");
+                   if (lintStatusLabel != null) lintStatusLabel.setText("  Step Explainer: " + stepExpl + " ");
+                   if (modernIDEUI != null) modernIDEUI.updateStepExplainer(stepExpl);
                    matrix.select=matrix.select+Integer.parseInt(jTableAssembler.getValueAt(matrix.select, 5).toString().trim());
                    break loop;
               }
@@ -3787,9 +3809,16 @@ public int find=0;
     }
 
     public static void main(String args[]) {
-                                                                                                                                                            try {
-        //UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-    } catch (Exception evt) {}
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                System.err.println("Uncaught exception in thread " + t.getName() + ": " + e);
+                e.printStackTrace();
+            }
+        });
+        try {
+            //UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+        } catch (Exception evt) {}
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 Assembler a=new Assembler();
@@ -3801,6 +3830,7 @@ public int find=0;
 
         });
     }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton jButtonAnalizeCW;
@@ -4206,19 +4236,39 @@ public int find=0;
                 javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
             }
 
+            // Update all windows UI — but if ModernIDEUI is active, we must
+            // re-add it afterward because updateComponentTreeUI may reset the content pane.
+            boolean hasModernUI = (modernIDEUI != null);
             for (java.awt.Window w : java.awt.Window.getWindows()) {
                 javax.swing.SwingUtilities.updateComponentTreeUI(w);
+            }
+
+            // If ModernIDEUI was set, re-ensure it is the content pane (theme update may reset it)
+            if (hasModernUI) {
+                if (getContentPane().getComponentCount() == 0 ||
+                        !(getContentPane().getComponent(0) instanceof ModernIDEUI)) {
+                    getContentPane().removeAll();
+                    getContentPane().setLayout(new java.awt.BorderLayout());
+                    getContentPane().add(modernIDEUI, java.awt.BorderLayout.CENTER);
+                }
+                modernIDEUI.reapplyColorScheme();
             }
 
             if (textEditor != null && textEditor.jTextPane1 != null) {
                 boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
                 if (isDark) {
                     textEditor.jTextPane1.setBackground(new java.awt.Color(0x1E, 0x1E, 0x1E));
+                    textEditor.jTextPane1.setForeground(new java.awt.Color(0xD4, 0xD4, 0xD4));
                     textEditor.jTextPane1.setCaretColor(java.awt.Color.WHITE);
                 } else {
                     java.awt.Color sysBg = javax.swing.UIManager.getColor("TextPane.background");
                     textEditor.jTextPane1.setBackground(sysBg != null ? sysBg : java.awt.Color.WHITE);
+                    textEditor.jTextPane1.setForeground(java.awt.Color.BLACK);
                     textEditor.jTextPane1.setCaretColor(java.awt.Color.BLACK);
+                }
+                if (textEditor.jScrollPane1 != null) {
+                    textEditor.jScrollPane1.getViewport().setBackground(
+                        textEditor.jTextPane1.getBackground());
                 }
                 textEditor.colorEditor();
             }
@@ -4230,6 +4280,7 @@ public int find=0;
             ex.printStackTrace();
         }
     }
+
 
     public void setupModernEnhancements() {
         // 1. Add Theme menu to jMenuBar1
@@ -4429,14 +4480,113 @@ public int find=0;
         lintStatusLabel = new javax.swing.JLabel(" Syntax: Ready ");
         lintStatusLabel.setFont(new java.awt.Font("Monospaced", java.awt.Font.BOLD, 12));
         lintStatusLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 8, 3, 8));
-        
-        // 4. Initialize Modern Desktop IDE Layout
+
+        // 4. Apply theme FIRST (calls updateComponentTreeUI on OLD layout, safe)
+        //    Must happen before replacing contentPane so the re-layout doesn't undo our UI.
+        try {
+            com.formdev.flatlaf.FlatDarkLaf.setup();
+        } catch (Exception ignored) {}
+
+        // 5. Now replace contentPane with ModernIDEUI AFTER theme is set
         modernIDEUI = new ModernIDEUI(this);
         getContentPane().removeAll();
         getContentPane().setLayout(new java.awt.BorderLayout());
         getContentPane().add(modernIDEUI, java.awt.BorderLayout.CENTER);
-        
-        applyTheme("dark");
+        revalidate();
+        repaint();
+
+        // 6. Apply dark colors to the text editor
+        if (textEditor != null && textEditor.jTextPane1 != null) {
+            textEditor.jTextPane1.setBackground(new java.awt.Color(0x1E, 0x1E, 0x1E));
+            textEditor.jTextPane1.setForeground(new java.awt.Color(0xD4, 0xD4, 0xD4));
+            textEditor.jTextPane1.setCaretColor(java.awt.Color.WHITE);
+            if (textEditor.jScrollPane1 != null) {
+                textEditor.jScrollPane1.setBackground(new java.awt.Color(0x1E, 0x1E, 0x1E));
+                textEditor.jScrollPane1.getViewport().setBackground(new java.awt.Color(0x1E, 0x1E, 0x1E));
+            }
+        }
+        optimizeAllTables();
+    }
+
+    // ── Public Sidebar Action Methods ──────────────────────────────────────────
+    // These allow ModernIDEUI to trigger panel/dialog navigation without needing
+    // direct access to private NetBeans-generated fields.
+
+    /** Show the Registers internal frame if available */
+    public void showRegistersPanel() {
+        if (jInternalFrame3 != null) {
+            jInternalFrame3.setVisible(true);
+            try { jInternalFrame3.setSelected(true); } catch (Exception ignored) {}
+        }
+    }
+
+    /** Show the Memory internal frame if available */
+    public void showMemoryPanel() {
+        if (jInternalFrame2 != null) {
+            jInternalFrame2.setVisible(true);
+            try { jInternalFrame2.setSelected(true); } catch (Exception ignored) {}
+        }
+    }
+
+    /** Show the Devices / I/O Port internal frame if available */
+    public void showDevicesPanel() {
+        if (jInternalFrame4 != null) {
+            jInternalFrame4.setVisible(true);
+            try { jInternalFrame4.setSelected(true); } catch (Exception ignored) {}
+        }
+    }
+
+    /** Open the Delay Subroutine dialog */
+    public void openDelaySubroutine() {
+        if (jMenuItemDelaySubroutine != null) {
+            jMenuItemDelaySubroutine.doClick();
+        }
+    }
+
+    /** Open the Interrupt Service Subroutine dialog */
+    public void openInterruptSubroutine() {
+        if (jMenuItemInterruptServiceSubroutine != null) {
+            jMenuItemInterruptServiceSubroutine.doClick();
+        }
+    }
+
+    /** Toggle the I/O Port panel on */
+    public void openIOPortPanel() {
+        if (jCheckBoxMenuItemIOPort != null) {
+            if (!jCheckBoxMenuItemIOPort.isSelected()) {
+                jCheckBoxMenuItemIOPort.setSelected(true);
+            }
+            jCheckBoxMenuItemIOPort.doClick();
+        }
+    }
+
+    /** Switch to the Disassembler tab and run disassemble */
+    public void openDisassemblerTab() {
+        if (jTabbedPaneAssemblerEditor != null && jTabbedPaneAssemblerEditor.getTabCount() > 1) {
+            jTabbedPaneAssemblerEditor.setSelectedIndex(1);
+        }
+        if (jButtonDisassemble != null) {
+            jButtonDisassemble.setVisible(true);
+            jButtonDisassemble.doClick();
+        }
+    }
+
+    /** Open the Settings dialog */
+    public void openSettings() {
+        if (jMenuItem1 != null) {
+            jMenuItem1.doClick();
+        }
+    }
+
+    /** Re-use the NetBeans-configured scroll pane for the editor */
+    public javax.swing.JScrollPane getEditorScrollPane() {
+        return jScrollPane9;
+    }
+
+    /** Re-use the NetBeans-configured scroll pane for the step debugger (jTableAssembler) */
+    public javax.swing.JScrollPane getDebuggerScrollPane() {
+        return jScrollPane16;
     }
 
 }
+

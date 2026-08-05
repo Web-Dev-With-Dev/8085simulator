@@ -105,83 +105,96 @@ public class AutoCompleter {
     }
 
     private void showCompletions() {
-        int caretPos = textPane.getCaretPosition();
-        String text = textPane.getText();
-        if (caretPos <= 0 || text.isEmpty()) {
-            popupMenu.setVisible(false);
-            return;
-        }
-
-        // Find current word prefix
-        int start = caretPos - 1;
-        while (start >= 0) {
-            char ch = text.charAt(start);
-            if (Character.isLetterOrDigit(ch) || ch == '_' || ch == '#') {
-                start--;
-            } else {
-                break;
-            }
-        }
-        start++;
-
-        String prefix = text.substring(start, caretPos);
-        if (prefix.trim().length() < 1) {
-            popupMenu.setVisible(false);
-            return;
-        }
-
-        String upperPrefix = prefix.toUpperCase();
-        List<String> matches = new ArrayList<>();
-
-        // Match Mnemonics
-        for (String m : MNEMONICS) {
-            if (m.startsWith(upperPrefix)) {
-                matches.add(m);
-            }
-        }
-
-        // Match Registers
-        for (String r : REGISTERS) {
-            if (r.startsWith(upperPrefix) && !matches.contains(r)) {
-                matches.add(r);
-            }
-        }
-
-        // Match User Defined Labels from document
-        Pattern labelPattern = Pattern.compile("([A-Za-z_][A-Za-z0-9_]*):");
-        Matcher matcher = labelPattern.matcher(text);
-        while (matcher.find()) {
-            String label = matcher.group(1).toUpperCase();
-            if (label.startsWith(upperPrefix) && !matches.contains(label)) {
-                matches.add(label);
-            }
-        }
-
-        if (matches.isEmpty()) {
-            popupMenu.setVisible(false);
-            return;
-        }
-
-        listModel.clear();
-        for (String m : matches) {
-            listModel.addElement(m);
-        }
-        list.setSelectedIndex(0);
-
-        int height = Math.min(matches.size() * 22 + 4, 150);
-        scrollPane.setPreferredSize(new Dimension(180, height));
-        popupMenu.pack();
-
         try {
-            Rectangle r = textPane.modelToView(start);
-            if (r != null) {
-                popupMenu.show(textPane, r.x, r.y + r.height + 2);
-                textPane.requestFocusInWindow();
+            int caretPos = textPane.getCaretPosition();
+            String text = textPane.getText();
+            if (caretPos <= 0 || text.isEmpty()) {
+                popupMenu.setVisible(false);
+                return;
             }
-        } catch (Exception ex) {
-            // Ignore positioning exception
+
+            // Find current word prefix safely
+            int start = caretPos - 1;
+            if (start >= text.length()) {
+                start = text.length() - 1;
+            }
+            while (start >= 0) {
+                char ch = text.charAt(start);
+                if (Character.isLetterOrDigit(ch) || ch == '_' || ch == '#') {
+                    start--;
+                } else {
+                    break;
+                }
+            }
+            start++;
+
+            if (start > caretPos || start < 0 || caretPos > text.length()) {
+                popupMenu.setVisible(false);
+                return;
+            }
+
+            String prefix = text.substring(start, caretPos);
+            if (prefix.trim().length() < 1) {
+                popupMenu.setVisible(false);
+                return;
+            }
+
+            String upperPrefix = prefix.toUpperCase();
+            List<String> matches = new ArrayList<>();
+
+            // Match Mnemonics
+            for (String m : MNEMONICS) {
+                if (m.startsWith(upperPrefix)) {
+                    matches.add(m);
+                }
+            }
+
+            // Match Registers
+            for (String r : REGISTERS) {
+                if (r.startsWith(upperPrefix) && !matches.contains(r)) {
+                    matches.add(r);
+                }
+            }
+
+            // Match User Defined Labels from document
+            Pattern labelPattern = Pattern.compile("([A-Za-z_][A-Za-z0-9_]*):");
+            Matcher matcher = labelPattern.matcher(text);
+            while (matcher.find()) {
+                String label = matcher.group(1).toUpperCase();
+                if (label.startsWith(upperPrefix) && !matches.contains(label)) {
+                    matches.add(label);
+                }
+            }
+
+            if (matches.isEmpty()) {
+                popupMenu.setVisible(false);
+                return;
+            }
+
+            listModel.clear();
+            for (String m : matches) {
+                listModel.addElement(m);
+            }
+            list.setSelectedIndex(0);
+
+            int height = Math.min(matches.size() * 22 + 4, 150);
+            scrollPane.setPreferredSize(new Dimension(180, height));
+            popupMenu.pack();
+
+            try {
+                Rectangle r = textPane.modelToView(start);
+                if (r != null) {
+                    popupMenu.show(textPane, r.x, r.y + r.height + 2);
+                    textPane.requestFocusInWindow();
+                }
+            } catch (Exception ex) {
+                // Ignore positioning exception
+            }
+        } catch (Throwable t) {
+            System.err.println("Autocompleter error: " + t);
         }
     }
+
 
     private void insertSelectedCompletion() {
         String selected = list.getSelectedValue();

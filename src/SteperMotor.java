@@ -8,23 +8,21 @@ import java.util.logging.Logger;
 
 public class SteperMotor extends javax.swing.JFrame {
 
-    int x=-80,y=-80;
-    int rotateLeft=0,rotateRight=0,stop=1;
-    double i=4;
+    int x = -80, y = -80;
+    int rotateLeft = 0, rotateRight = 0, stop = 1;
+    double i = 4;
     Graphics g;
-    int speed=50;
-   CanvasDraw c;
+    int speed = 50;
+    CanvasDraw c;
 
     public SteperMotor() {
         initComponents();
-        c=(CanvasDraw) canvas1;
+        c = (CanvasDraw) canvas1;
     }
 
-    
-
-    
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated
+    // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         canvas1 = new CanvasDraw(this);
@@ -82,60 +80,62 @@ public class SteperMotor extends javax.swing.JFrame {
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addComponent(canvas1, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButtonLeft)
-                .addGap(37, 37, 37)
-                .addComponent(jButtonStop)
-                .addGap(28, 28, 28)
-                .addComponent(jButtonRight))
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(canvas1, javax.swing.GroupLayout.PREFERRED_SIZE, 163,
+                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jButtonLeft)
+                                .addGap(37, 37, 37)
+                                .addComponent(jButtonStop)
+                                .addGap(28, 28, 28)
+                                .addComponent(jButtonRight)));
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(canvas1, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButtonLeft)
-                    .addComponent(jButtonRight)
-                    .addComponent(jButtonStop))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(canvas1, javax.swing.GroupLayout.PREFERRED_SIZE, 144,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jButtonLeft)
+                                        .addComponent(jButtonRight)
+                                        .addComponent(jButtonStop))
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jSlider1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jSlider1MouseReleased
-                speed=(100-jSlider1.getValue());
-    }//GEN-LAST:event_jSlider1MouseReleased
+    private void jSlider1MouseReleased(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_jSlider1MouseReleased
+        speed = (100 - jSlider1.getValue());
+    }// GEN-LAST:event_jSlider1MouseReleased
 
-    private void jButtonLeftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLeftActionPerformed
+    private void jButtonLeftActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButtonLeftActionPerformed
         c.rotateLeft();
-    }//GEN-LAST:event_jButtonLeftActionPerformed
+    }// GEN-LAST:event_jButtonLeftActionPerformed
 
-    private void jButtonRightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRightActionPerformed
+    private void jButtonRightActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButtonRightActionPerformed
         c.rotateRight();
-    }//GEN-LAST:event_jButtonRightActionPerformed
+    }// GEN-LAST:event_jButtonRightActionPerformed
 
-    private void jButtonStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonStopActionPerformed
+    private void jButtonStopActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButtonStopActionPerformed
         c.stop();
-    }//GEN-LAST:event_jButtonStopActionPerformed
+    }// GEN-LAST:event_jButtonStopActionPerformed
 
-    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {// GEN-FIRST:event_formWindowClosing
         c.terminate();
-    }//GEN-LAST:event_formWindowClosing
+    }// GEN-LAST:event_formWindowClosing
 
-    private void jSlider1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jSlider1KeyReleased
-                speed=(100-jSlider1.getValue());
+    private void jSlider1KeyReleased(java.awt.event.KeyEvent evt) {// GEN-FIRST:event_jSlider1KeyReleased
+        speed = (100 - jSlider1.getValue());
 
-    }//GEN-LAST:event_jSlider1KeyReleased
+    }// GEN-LAST:event_jSlider1KeyReleased
 
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -155,49 +155,49 @@ public class SteperMotor extends javax.swing.JFrame {
 
 }
 
-class CanvasDraw extends Canvas implements Runnable
-{
+class CanvasDraw extends Canvas implements Runnable {
     Graphics g;
     ExecutorService exec = Executors.newCachedThreadPool();
     SteperMotor o;
-    boolean run=true;
+    boolean run = true;
 
-    public CanvasDraw(SteperMotor o)
-    {
-        this.o=o;
+    public CanvasDraw(SteperMotor o) {
+        this.o = o;
         exec.execute(this);
 
     }
 
-    public void rotateRight()
-    {
-        o.rotateLeft=0;o.rotateRight=1;o.stop=0;
-
-    }
-    public void rotateLeft()
-    {
-
-        o.rotateLeft=1;o.rotateRight=0;o.stop=0;
-
-    }
-    public void stop()
-    {
-        o.rotateLeft=0;o.rotateRight=0;o.stop=1;
-
+    public void rotateRight() {
+        o.rotateLeft = 0;
+        o.rotateRight = 1;
+        o.stop = 0;
 
     }
 
-    public void run()
-    {
-       while(run)  {
+    public void rotateLeft() {
+
+        o.rotateLeft = 1;
+        o.rotateRight = 0;
+        o.stop = 0;
+
+    }
+
+    public void stop() {
+        o.rotateLeft = 0;
+        o.rotateRight = 0;
+        o.stop = 1;
+
+    }
+
+    public void run() {
+        while (run) {
             repaint();
-            if(o.rotateLeft==1) {
+            if (o.rotateLeft == 1) {
                 o.i = o.i - 0.05;
-            }
-            else if(o.rotateRight==1) {
+            } else if (o.rotateRight == 1) {
                 o.i = o.i + 0.05;
             }
-            
+
             try {
                 Thread.sleep(o.speed);
 
@@ -208,44 +208,43 @@ class CanvasDraw extends Canvas implements Runnable
     }
 
     @Override
-    public void paint(Graphics g1)
-    {
+    public void paint(Graphics g1) {
 
         Graphics2D g = (Graphics2D) g1;
         g.setStroke(new BasicStroke(3));
         g.setBackground(Color.WHITE);
         g.clearRect(0, 0, 300, 300);
-        g.setColor(new java.awt.Color(0,220,0));
-        g.drawOval(o.x+96,o.y+96,108,108);
+        g.setColor(new java.awt.Color(0, 220, 0));
+        g.drawOval(o.x + 96, o.y + 96, 108, 108);
         g.setColor(Color.BLACK);
-        g.drawOval(o.x+96,o.y+96,110,110);
+        g.drawOval(o.x + 96, o.y + 96, 110, 110);
 
+        for (int j = 0; j < 12; j++) {
+            g.setColor(new java.awt.Color(0, 220, 0));
+            g.drawLine(o.x + 150, o.y + 150, (int) (o.x + 150 + 50 * Math.cos(o.i + j)),
+                    (int) (o.y + 150 + 50 * Math.sin(o.i + j)));
 
-                for(int j=0;j<12;j++){
-                g.setColor(new java.awt.Color(0,220,0));
-                g.drawLine(o.x+150,o.y+150, (int) (o.x +150+ 50 * Math.cos(o.i+j)),(int) (o.y +150+ 50 * Math.sin(o.i+j)));
-                
-                }
-        
+        }
+
     }
 
     BufferedImage bufferedimage;
-    Rectangle rect=null;
-    public void update(Graphics g){
-        if(!getBounds().equals(rect)){
-            rect=getBounds();
-            bufferedimage=new BufferedImage(rect.width, rect.height, BufferedImage.TYPE_INT_ARGB);
+    Rectangle rect = null;
+
+    public void update(Graphics g) {
+        if (!getBounds().equals(rect)) {
+            rect = getBounds();
+            bufferedimage = new BufferedImage(rect.width, rect.height, BufferedImage.TYPE_INT_ARGB);
         }
-        if(run){
+        if (run) {
 
             paint(bufferedimage.getGraphics());
             g.drawImage(bufferedimage, 0, 0, null);
         }
     }
 
-    public void terminate()
-    {
-        run=false;
+    public void terminate() {
+        run = false;
         exec.shutdown();
     }
 
