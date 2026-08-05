@@ -1619,7 +1619,7 @@ public class AssemblerEngine {
             //Code
             if(index_comment<=index_colon) index_colon = -1;
             filter[1]=s.substring(index_colon+1,index_comment);
-            filter[1] = filter[1].trim();
+            filter[1] = filter[1].trim().replaceAll(",\\s+", ",");
 
             return filter;
         } catch (Exception e) {

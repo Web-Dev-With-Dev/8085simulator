@@ -10,6 +10,8 @@ public class Matrix {
     int temp=0;
     int memory[];
     int port[];
+    public int portWriteCount[];
+    public java.util.concurrent.ConcurrentLinkedQueue<Integer> portQueue[];
     int select=0;
     String[] label;
     String[][] preLabel;
@@ -19,6 +21,11 @@ public class Matrix {
         this.o=o;
         memory=new int[65536];
         port=new int[256];
+        portWriteCount=new int[256];
+        portQueue=new java.util.concurrent.ConcurrentLinkedQueue[256];
+        for(int p=0; p<256; p++) {
+            portQueue[p] = new java.util.concurrent.ConcurrentLinkedQueue<>();
+        }
         label=new String[65536];
         preLabel=new String[500][2];
         engine=new AssemblerEngine(this);
@@ -1465,8 +1472,14 @@ public class Matrix {
                     if ((F&1)== 0)PC = memory[PC++] + memory[PC++] * 256;
                     else {PC += 2;clockCycleCounter-=3;}
                     break;
-            case 211:port[memory[PC++]]=A;
-                   break;
+            case 211:
+                int pOut = memory[PC++];
+                port[pOut] = A;
+                portWriteCount[pOut]++;
+                if (portQueue != null && pOut < portQueue.length && portQueue[pOut] != null) {
+                    portQueue[pOut].offer(A);
+                }
+                break;
             case 212:if((F&1)==0){
                     temp=PC+2;
                     pushInStack(temp/256, temp%256);
