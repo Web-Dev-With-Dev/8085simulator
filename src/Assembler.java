@@ -40,6 +40,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
     int memShift=0;
     int continueFrom=0;
     String fileSeparator=System.getProperty("file.separator");
+    public ModernIDEUI modernIDEUI;
     
 
     public Assembler() {
@@ -3670,9 +3671,9 @@ public int find=0;
         jTableRIM.setValueAt("    "+matrix.M65, 0, 6);
         jTableRIM.setValueAt("    "+matrix.M55, 0, 7);
 
-
-
-
+        if (modernIDEUI != null) {
+            modernIDEUI.refreshData();
+        }
     }
 
     public void set()
@@ -3682,7 +3683,9 @@ public int find=0;
         setResister();
         ppi8255.set();
         jRadioButtonUsedMemoryLocationActionPerformed(null);
-
+        if (modernIDEUI != null) {
+            modernIDEUI.refreshData();
+        }
     }
 
     
@@ -3777,15 +3780,15 @@ public int find=0;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButtonAnalizeCW;
-    private javax.swing.JButton jButtonAssemble;
-    private javax.swing.JButton jButtonAutocorrect;
+    public javax.swing.JButton jButtonAnalizeCW;
+    public javax.swing.JButton jButtonAssemble;
+    public javax.swing.JButton jButtonAutocorrect;
     public javax.swing.JButton jButtonBackward;
     public javax.swing.JButton jButtonContinue;
-    private javax.swing.JButton jButtonDisassemble;
-    private javax.swing.JButton jButtonForward;
+    public javax.swing.JButton jButtonDisassemble;
+    public javax.swing.JButton jButtonForward;
     public javax.swing.JButton jButtonRun;
-    private javax.swing.JButton jButtonStep;
+    public javax.swing.JButton jButtonStep;
     public javax.swing.JButton jButtonStop;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem3;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem4;
@@ -3847,19 +3850,19 @@ public int find=0;
     private javax.swing.JMenuItem jMenuItemAbout;
     private javax.swing.JMenuItem jMenuItemAutocorrect;
     private javax.swing.JMenuItem jMenuItemBackward;
-    private javax.swing.JMenuItem jMenuItemClearMemory;
+    public javax.swing.JMenuItem jMenuItemClearMemory;
     private javax.swing.JMenuItem jMenuItemDelaySubroutine;
     private javax.swing.JMenuItem jMenuItemExit;
     private javax.swing.JMenuItem jMenuItemForward;
     private javax.swing.JMenuItem jMenuItemHelp;
     private javax.swing.JMenuItem jMenuItemInterruptServiceSubroutine;
-    private javax.swing.JMenuItem jMenuItemLoad_Assembly_Language_code;
+    public javax.swing.JMenuItem jMenuItemLoad_Assembly_Language_code;
     private javax.swing.JMenuItem jMenuItemLoad_Hexcode;
     private javax.swing.JMenuItem jMenuItemLoad_Raw_Binary;
     private javax.swing.JMenuItem jMenuItemImport_Documentation;
     private javax.swing.JMenuItem jMenuItemRecover;
     private javax.swing.JMenuItem jMenuItemRunAllAtATime;
-    private javax.swing.JMenuItem jMenuItemSave_Assembly_Language_code;
+    public javax.swing.JMenuItem jMenuItemSave_Assembly_Language_code;
     private javax.swing.JMenuItem jMenuItemSave_Hexcode;
     private javax.swing.JMenuItem jMenuItemSave_Raw_Binary;
     private javax.swing.JMenuItem jMenuItemExport_Documentation;
@@ -3900,11 +3903,11 @@ public int find=0;
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
     private javax.swing.JSeparator jSeparator9;
-    private javax.swing.JTabbedPane jTabbedPaneAssemblerEditor;
+    public javax.swing.JTabbedPane jTabbedPaneAssemblerEditor;
     private javax.swing.JTabbedPane jTabbedPaneEditor;
     private javax.swing.JTabbedPane jTabbedPaneInterface;
     private javax.swing.JTabbedPane jTabbedPaneLabelEditor;
-    private javax.swing.JTabbedPane jTabbedPaneMemory;
+    public javax.swing.JTabbedPane jTabbedPaneMemory;
     public javax.swing.JTable jTable8255;
     public javax.swing.JTable jTableAssembler;
     private javax.swing.JTable jTableCounter;
@@ -4280,7 +4283,12 @@ public int find=0;
         lintStatusLabel = new javax.swing.JLabel(" Syntax: Ready ");
         lintStatusLabel.setFont(new java.awt.Font("Monospaced", java.awt.Font.BOLD, 12));
         lintStatusLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 8, 3, 8));
-        getContentPane().add(lintStatusLabel, java.awt.BorderLayout.SOUTH);
+        
+        // 4. Initialize Modern Desktop IDE Layout
+        modernIDEUI = new ModernIDEUI(this);
+        getContentPane().removeAll();
+        getContentPane().setLayout(new java.awt.BorderLayout());
+        getContentPane().add(modernIDEUI, java.awt.BorderLayout.CENTER);
         
         applyTheme("dark");
     }
