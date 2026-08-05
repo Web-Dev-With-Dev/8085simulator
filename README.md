@@ -109,4 +109,4 @@ This project is licensed under the **GNU General Public License v2.0**.
 See [LICENSE](LICENSE) for the full license text.
 
 Original simulator: Copyright (C) [jm61288](https://github.com/jm61288/8085Simulator)  
-AURA Studio enhancements: Copyright (C) 2025 [Web-Dev-With-Dev](https://github.com/Web-Dev-With-Dev)
+AURA Studio enhancements: Copyright (C) 2026 [Web-Dev-With-Dev](https://github.com/Web-Dev-With-Dev)
