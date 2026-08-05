@@ -110,7 +110,7 @@ public class SevenSegmentVisualizer extends JFrame {
         // 1. TOP TITLE BANNER
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setOpaque(false);
-        JLabel titleLbl = new JLabel("💡 8085 7-Segment LED Display Module", SwingConstants.LEFT);
+        JLabel titleLbl = new JLabel("8085 7-Segment LED Display Module", SwingConstants.LEFT);
         titleLbl.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titleLbl.setForeground(new Color(0x38, 0xBD, 0xF8));
 
@@ -139,7 +139,7 @@ public class SevenSegmentVisualizer extends JFrame {
         configPanel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(0x33, 0x41, 0x55)),
-                " ⚙️ Display Configuration & Port Settings ",
+                "Display Configuration & Port Settings",
                 0, 0, new Font("Segoe UI", Font.BOLD, 12), new Color(0x94, 0xA3, 0xB8)
             ),
             BorderFactory.createEmptyBorder(8, 10, 8, 10)
@@ -194,7 +194,7 @@ public class SevenSegmentVisualizer extends JFrame {
         gbc.gridx = 2; gbc.gridy = 1;
         configPanel.add(createLabel("LED Color:"), gbc);
         gbc.gridx = 3;
-        cbLedColor = new JComboBox<>(new String[]{"🔴 Neon Red", "🟢 Cyber Green", "🔵 Ice Cyan", "🟠 Amber Orange"});
+        cbLedColor = new JComboBox<>(new String[]{"Neon Red", "Cyber Green", "Ice Cyan", "Amber Orange"});
         cbLedColor.addActionListener(e -> {
             switch (cbLedColor.getSelectedIndex()) {
                 case 0: ledColor = new Color(0xFF, 0x17, 0x44); break;

@@ -85,7 +85,7 @@ public class ADCDACVisualizer extends JFrame {
         // 1. TOP HEADER BANNER
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
-        JLabel titleLbl = new JLabel("🔬 8-Bit ADC & DAC Waveform Oscilloscope", SwingConstants.LEFT);
+        JLabel titleLbl = new JLabel("8-Bit ADC & DAC Waveform Oscilloscope", SwingConstants.LEFT);
         titleLbl.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titleLbl.setForeground(new Color(0x38, 0xBD, 0xF8));
 
@@ -111,7 +111,7 @@ public class ADCDACVisualizer extends JFrame {
         adcPanel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(0x38, 0xBD, 0xF8)),
-                " 🎛️ 8-Bit ADC Input Control (V_in -> IN Port) ",
+                "8-Bit ADC Input Control (V_in -> IN Port)",
                 0, 0, new Font("Segoe UI", Font.BOLD, 12), new Color(0x38, 0xBD, 0xF8)
             ),
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
@@ -167,7 +167,7 @@ public class ADCDACVisualizer extends JFrame {
         statsPanel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(0x34, 0xD3, 0x99)),
-                " 📈 DAC Output Oscilloscope Stats ",
+                "DAC Output Oscilloscope Stats",
                 0, 0, new Font("Segoe UI", Font.BOLD, 12), new Color(0x34, 0xD3, 0x99)
             ),
             BorderFactory.createEmptyBorder(8, 10, 8, 10)
@@ -188,18 +188,18 @@ public class ADCDACVisualizer extends JFrame {
         // Preset Waveform Loaders
         JPanel presetsPanel = new JPanel(new GridLayout(2, 2, 6, 6));
         presetsPanel.setOpaque(false);
-        presetsPanel.setBorder(BorderFactory.createTitledBorder(null, "⚡ Load Waveform Assembly Scripts", 0, 0, new Font("Segoe UI", Font.BOLD, 11), Color.LIGHT_GRAY));
+        presetsPanel.setBorder(BorderFactory.createTitledBorder(null, "Load Waveform Assembly Scripts", 0, 0, new Font("Segoe UI", Font.BOLD, 11), Color.LIGHT_GRAY));
 
-        JButton btnRamp = new JButton("📈 Sawtooth Wave");
+        JButton btnRamp = new JButton("Sawtooth Wave");
         btnRamp.addActionListener(e -> loadWaveScript("RAMP"));
 
-        JButton btnSquare = new JButton("⏹️ Square Wave");
+        JButton btnSquare = new JButton("Square Wave");
         btnSquare.addActionListener(e -> loadWaveScript("SQUARE"));
 
-        JButton btnTri = new JButton("📐 Triangular Wave");
+        JButton btnTri = new JButton("Triangular Wave");
         btnTri.addActionListener(e -> loadWaveScript("TRIANGLE"));
 
-        JButton btnClearTrace = new JButton("🧹 Clear Trace");
+        JButton btnClearTrace = new JButton("Clear Trace");
         btnClearTrace.addActionListener(e -> {
             dacVoltageHistory.clear();
             oscilloscopePanel.repaint();
@@ -237,7 +237,7 @@ public class ADCDACVisualizer extends JFrame {
         configPanel.add(cbAdcPort);
 
         configPanel.add(createLabel("Trace Color:"));
-        cbTraceColor = new JComboBox<>(new String[]{"🟢 Emerald Green", "🔵 Ice Cyan", "🟡 Amber Yellow", "🔴 Neon Pink"});
+        cbTraceColor = new JComboBox<>(new String[]{"Emerald Green", "Ice Cyan", "Amber Yellow", "Neon Pink"});
         cbTraceColor.addActionListener(e -> {
             switch (cbTraceColor.getSelectedIndex()) {
                 case 0: traceColor = new Color(0x00, 0xE6, 0x76); break;

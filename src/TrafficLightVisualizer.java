@@ -71,7 +71,7 @@ public class TrafficLightVisualizer extends JFrame {
         // 1. TOP TITLE BANNER
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setOpaque(false);
-        JLabel titleLbl = new JLabel("🚦 8085 4-Way Traffic Light Junction Controller", SwingConstants.LEFT);
+        JLabel titleLbl = new JLabel("8085 4-Way Traffic Light Junction Controller", SwingConstants.LEFT);
         titleLbl.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titleLbl.setForeground(new Color(0x38, 0xBD, 0xF8));
 
@@ -96,7 +96,7 @@ public class TrafficLightVisualizer extends JFrame {
         configPanel.setOpaque(false);
         configPanel.setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(new Color(0x33, 0x41, 0x55)),
-            " ⚙️ I/O Port & Decoding Mode ",
+            "I/O Port & Decoding Mode",
             0, 0, new Font("Segoe UI", Font.BOLD, 12), new Color(0x94, 0xA3, 0xB8)
         ));
 
@@ -141,17 +141,17 @@ public class TrafficLightVisualizer extends JFrame {
         presetsPanel.setOpaque(false);
         presetsPanel.setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(new Color(0x33, 0x41, 0x55)),
-            " ⚡ Preset Traffic Sequences ",
+            "Preset Traffic Sequences",
             0, 0, new Font("Segoe UI", Font.BOLD, 12), new Color(0x94, 0xA3, 0xB8)
         ));
 
-        JButton btnSeq = new JButton("🚦 Full Traffic Loop");
+        JButton btnSeq = new JButton("Full Traffic Loop");
         btnSeq.addActionListener(e -> loadTrafficScript("FULL"));
 
-        JButton btnNight = new JButton("⚠️ Flashing Amber");
+        JButton btnNight = new JButton("Flashing Amber");
         btnNight.addActionListener(e -> loadTrafficScript("AMBER"));
 
-        JButton btnStop = new JButton("🛑 Emergency Stop");
+        JButton btnStop = new JButton("Emergency Stop");
         btnStop.addActionListener(e -> loadTrafficScript("STOP"));
 
         presetsPanel.add(btnSeq);
@@ -223,9 +223,9 @@ public class TrafficLightVisualizer extends JFrame {
 
     private String getStateName(int state) {
         switch (state) {
-            case 1: return "AMBER 🟡";
-            case 2: return "GREEN 🟢";
-            default: return "RED 🔴";
+            case 1: return "AMBER";
+            case 2: return "GREEN";
+            default: return "RED";
         }
     }
 

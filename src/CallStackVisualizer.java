@@ -105,7 +105,7 @@ public class CallStackVisualizer extends JFrame {
         // 1. TOP HEADER SUMMARY PANEL
         headerPanel = new JPanel(new GridLayout(1, 4, 10, 0));
         headerPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder(" 📊 Stack Pointer & CPU Execution Status "),
+            BorderFactory.createTitledBorder(" Stack Pointer & CPU Execution Status "),
             BorderFactory.createEmptyBorder(6, 10, 6, 10)
         ));
 
@@ -128,7 +128,7 @@ public class CallStackVisualizer extends JFrame {
         stackTowerPanel = new StackTowerPanel();
         JScrollPane towerScrollPane = new JScrollPane(stackTowerPanel);
         towerScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        leftTabbedPane.addTab("🗼 Stack Tower Graphic", towerScrollPane);
+        leftTabbedPane.addTab("Stack Tower Graphic", towerScrollPane);
 
         // Tab 2: Subroutine Call Nesting Tree
         rootTreeNode = new DefaultMutableTreeNode("Main Program (0x0000)");
@@ -136,7 +136,7 @@ public class CallStackVisualizer extends JFrame {
         callTree = new JTree(treeModel);
         callTree.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         JScrollPane treeScrollPane = new JScrollPane(callTree);
-        leftTabbedPane.addTab("🌳 Subroutine Call Tree", treeScrollPane);
+        leftTabbedPane.addTab("Subroutine Call Tree", treeScrollPane);
 
         leftTabbedPane.setPreferredSize(new Dimension(340, 400));
 
@@ -448,7 +448,7 @@ public class CallStackVisualizer extends JFrame {
             // Header Banner
             g2.setFont(new Font("Segoe UI", Font.BOLD, 13));
             g2.setColor(isDark ? new Color(0x38, 0xBD, 0xF8) : new Color(0x02, 0x84, 0xC7));
-            g2.drawString(String.format("⬅️ SP: 0x%04X (Top of Stack)", currentSP), 15, y + 15);
+            g2.drawString(String.format("SP: 0x%04X (Top of Stack)", currentSP), 15, y + 15);
             y += 35;
 
             if (items.isEmpty()) {
@@ -499,7 +499,7 @@ public class CallStackVisualizer extends JFrame {
                 if (i == 0) {
                     g2.setColor(isDark ? new Color(0x34, 0xD3, 0x99) : new Color(0x05, 0x96, 0x69));
                     g2.setFont(new Font("Segoe UI", Font.BOLD, 12));
-                    g2.drawString("⬅️ SP", boxW - 25, y + 26);
+                    g2.drawString("SP", boxW - 25, y + 26);
                 }
 
                 y += 58;
