@@ -1973,6 +1973,22 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
     });
     jMenu8.add(jMenuItem8);
 
+    javax.swing.JMenuItem adcDacMenuItem = new javax.swing.JMenuItem("ADC & DAC Oscilloscope");
+    adcDacMenuItem.addActionListener(e -> {
+        ADCDACVisualizer vis = ADCDACVisualizer.getInstance(matrix, Assembler.this);
+        vis.setVisible(true);
+        vis.toFront();
+    });
+    jMenu8.add(adcDacMenuItem);
+
+    javax.swing.JMenuItem trafficMenuItem = new javax.swing.JMenuItem("4-Way Traffic Light Controller");
+    trafficMenuItem.addActionListener(e -> {
+        TrafficLightVisualizer vis = TrafficLightVisualizer.getInstance(matrix, Assembler.this);
+        vis.setVisible(true);
+        vis.toFront();
+    });
+    jMenu8.add(trafficMenuItem);
+
     jMenu12.add(jMenu8);
 
     jMenuBar1.add(jMenu12);
@@ -3156,10 +3172,9 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
    }//GEN-LAST:event_jMenuItemAutocorrectActionPerformed
 
    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
-
-       lcd lcd=new lcd();
-       lcd.setVisible(true);
-
+       SevenSegmentVisualizer vis = SevenSegmentVisualizer.getInstance(matrix, this);
+       vis.setVisible(true);
+       vis.toFront();
    }//GEN-LAST:event_jMenuItem7ActionPerformed
 
    private void jMenuItem8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem8ActionPerformed
@@ -4244,10 +4259,74 @@ public int find=0;
             insp.toFront();
         });
 
+        javax.swing.JMenuItem callStackItem = new javax.swing.JMenuItem(" Call Stack & Frame Visualizer");
+        callStackItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        callStackItem.addActionListener(e -> {
+            CallStackVisualizer vis = CallStackVisualizer.getInstance(matrix, this);
+            vis.setVisible(true);
+            vis.toFront();
+        });
+
+        javax.swing.JMenuItem sevenSegItem = new javax.swing.JMenuItem(" 💡 7-Segment LED Display Unit");
+        sevenSegItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_7, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        sevenSegItem.addActionListener(e -> {
+            SevenSegmentVisualizer vis = SevenSegmentVisualizer.getInstance(matrix, this);
+            vis.setVisible(true);
+            vis.toFront();
+        });
+
+        javax.swing.JMenuItem adcDacItem = new javax.swing.JMenuItem(" 🔬 8-Bit ADC & DAC Waveform Oscilloscope");
+        adcDacItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        adcDacItem.addActionListener(e -> {
+            ADCDACVisualizer vis = ADCDACVisualizer.getInstance(matrix, this);
+            vis.setVisible(true);
+            vis.toFront();
+        });
+
+        javax.swing.JMenuItem trafficItem = new javax.swing.JMenuItem(" 🚦 4-Way Traffic Light Controller");
+        trafficItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        trafficItem.addActionListener(e -> {
+            TrafficLightVisualizer vis = TrafficLightVisualizer.getInstance(matrix, this);
+            vis.setVisible(true);
+            vis.toFront();
+        });
+
         jMenu1.addSeparator();
         jMenu1.add(formatItem);
         jMenu1.add(heatmapItem);
         jMenu1.add(regInspectorItem);
+        jMenu1.add(callStackItem);
+        jMenu1.add(sevenSegItem);
+        jMenu1.add(adcDacItem);
+        jMenu1.add(trafficItem);
+
+        // Global Keybindings for Tools (WHEN_IN_FOCUSED_WINDOW)
+        getRootPane().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK),
+            "openTrafficLight"
+        );
+        getRootPane().getActionMap().put("openTrafficLight", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                TrafficLightVisualizer vis = TrafficLightVisualizer.getInstance(matrix, Assembler.this);
+                vis.setVisible(true);
+                vis.toFront();
+            }
+        });
+
+        // Global Keybindings for Tools (WHEN_IN_FOCUSED_WINDOW)
+        getRootPane().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK),
+            "openAdcDac"
+        );
+        getRootPane().getActionMap().put("openAdcDac", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                ADCDACVisualizer vis = ADCDACVisualizer.getInstance(matrix, Assembler.this);
+                vis.setVisible(true);
+                vis.toFront();
+            }
+        });
 
         // Global Keybindings for Tools (WHEN_IN_FOCUSED_WINDOW)
         getRootPane().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(
@@ -4271,6 +4350,19 @@ public int find=0;
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 MemoryHeatmapVisualizer vis = MemoryHeatmapVisualizer.getInstance(matrix, Assembler.this);
+                vis.setVisible(true);
+                vis.toFront();
+            }
+        });
+
+        getRootPane().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK),
+            "openCallStack"
+        );
+        getRootPane().getActionMap().put("openCallStack", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                CallStackVisualizer vis = CallStackVisualizer.getInstance(matrix, Assembler.this);
                 vis.setVisible(true);
                 vis.toFront();
             }

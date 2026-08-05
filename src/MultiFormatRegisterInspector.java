@@ -263,6 +263,7 @@ public class MultiFormatRegisterInspector extends JFrame {
     }
 
     public void updateValues() {
+        Matrix matrix = (assembler != null && assembler.matrix != null) ? assembler.matrix : this.matrix;
         if (matrix == null) return;
 
         int a = matrix.A & 0xFF;

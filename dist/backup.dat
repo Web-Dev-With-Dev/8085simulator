@@ -1,1 +1,18 @@
 true
+; --- Night Flashing Amber Mode ---
+START: MVI A,12H    ; N & S Amber
+       OUT 00H
+       OUT 01H       ; E & W Amber
+       CALL DELAY
+       MVI A,00H    ; Lights OFF
+       OUT 00H
+       OUT 01H
+       CALL DELAY
+       JMP START
+
+DELAY: LXI B,0005H
+D_LOOP: DCX B
+       MOV A,B
+       ORA C
+       JNZ D_LOOP
+       RET

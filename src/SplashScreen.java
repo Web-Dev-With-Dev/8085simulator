@@ -94,34 +94,36 @@ public class SplashScreen extends JWindow {
                     Scene scene = new Scene(root, w, h, Color.BLACK);
                     fxPanel.setScene(scene);
 
-                    // Auto-advance when video ends
+                    // Auto-advance when video ends or encounters error
                     player.setOnEndOfMedia(() -> launchMainApp(player));
+                    player.setOnError(() -> launchMainApp(player));
 
-                    // Safety cap at 15 seconds (in case video is very long)
+                    // Safety cap at 3.5 seconds max for video splash
                     player.currentTimeProperty().addListener((obs, oldT, newT) -> {
-                        if (newT.greaterThanOrEqualTo(Duration.seconds(15))) {
+                        if (newT.greaterThanOrEqualTo(Duration.seconds(3.5))) {
                             launchMainApp(player);
                         }
                     });
 
-                    // Click or key press to skip
+                    // Click or key press to skip immediately
                     scene.setOnMouseClicked(e -> launchMainApp(player));
                     scene.setOnKeyPressed(e  -> launchMainApp(player));
 
+                    // Fail-safe Swing Timer: launch main app after 4 seconds guaranteed
+                    Timer failSafeTimer = new Timer(4000, e -> launchMainApp(player));
+                    failSafeTimer.setRepeats(false);
+                    failSafeTimer.start();
+
                 } catch (Exception ex) {
                     System.err.println("Video playback failed: " + ex.getMessage());
-                    SwingUtilities.invokeLater(this::showFallbackSplash);
+                    launchMainApp(null);
                 }
             });
 
         } else {
-            // No video resource found  fallback text splash
+            // No video resource found - fallback text splash
             System.err.println("splash_video.mp4 not found in JAR resources.");
-            showFallbackSplash();
-            setVisible(true);
-            Timer t = new Timer(2500, e -> launchMainApp(null));
-            t.setRepeats(false);
-            t.start();
+            launchMainApp(null);
         }
     }
 
