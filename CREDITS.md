@@ -21,7 +21,7 @@
 ## AURA Studio — Enhancements & Extensions
 
 **Developed by:** [Web-Dev-With-Dev](https://github.com/Web-Dev-With-Dev)  
-**Year:** 2025  
+**Year:** 2026  
 **Repository:** https://github.com/Web-Dev-With-Dev/8085simulator
 
 ### Contributions
