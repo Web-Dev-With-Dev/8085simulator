@@ -52,12 +52,13 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         disassembler = new Disassembler(this);
         textEditor=new TextEditor(this);
         initComponents();
-        // Set AURA logo on all internal frame title bars
+        // Set AURA logo on all internal frame title bars and the main application window
         try {
             java.awt.image.BufferedImage raw = javax.imageio.ImageIO.read(
                 getClass().getResourceAsStream("/aura_logo.dat"));
             if (raw != null) {
                 java.awt.Image scaled = raw.getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH);
+                this.setIconImage(scaled); // Set main app window icon
                 javax.swing.ImageIcon auraIcon = new javax.swing.ImageIcon(scaled);
                 jInternalFrame1.setFrameIcon(auraIcon);
                 jInternalFrame2.setFrameIcon(auraIcon);
@@ -4514,25 +4515,25 @@ public int find=0;
 
     /** Show the Registers internal frame if available */
     public void showRegistersPanel() {
-        if (jInternalFrame3 != null) {
-            jInternalFrame3.setVisible(true);
-            try { jInternalFrame3.setSelected(true); } catch (Exception ignored) {}
+        if (jTabbedPaneMemory != null) {
+            // Tab 0 = Registers (jInternalFrame3)
+            jTabbedPaneMemory.setSelectedIndex(0);
         }
     }
 
-    /** Show the Memory internal frame if available */
+    /** Show the Memory tab */
     public void showMemoryPanel() {
-        if (jInternalFrame2 != null) {
-            jInternalFrame2.setVisible(true);
-            try { jInternalFrame2.setSelected(true); } catch (Exception ignored) {}
+        if (jTabbedPaneMemory != null) {
+            // Tab 1 = Memory (jInternalFrame2)
+            if (jTabbedPaneMemory.getTabCount() > 1) jTabbedPaneMemory.setSelectedIndex(1);
         }
     }
 
-    /** Show the Devices / I/O Port internal frame if available */
+    /** Show the Devices tab */
     public void showDevicesPanel() {
-        if (jInternalFrame4 != null) {
-            jInternalFrame4.setVisible(true);
-            try { jInternalFrame4.setSelected(true); } catch (Exception ignored) {}
+        if (jTabbedPaneMemory != null) {
+            // Tab 2 = Devices (jInternalFrame4)
+            if (jTabbedPaneMemory.getTabCount() > 2) jTabbedPaneMemory.setSelectedIndex(2);
         }
     }
 
@@ -4552,11 +4553,13 @@ public int find=0;
 
     /** Toggle the I/O Port panel on */
     public void openIOPortPanel() {
-        if (jCheckBoxMenuItemIOPort != null) {
-            if (!jCheckBoxMenuItemIOPort.isSelected()) {
-                jCheckBoxMenuItemIOPort.setSelected(true);
-            }
-            jCheckBoxMenuItemIOPort.doClick();
+        if (jTabbedPaneInterface != null) {
+            jTabbedPaneInterface.removeAll();
+            if (jScrollPane4 != null) jTabbedPaneInterface.addTab("I/O Port Editor", jScrollPane4);
+            if (jPanel8255 != null) jTabbedPaneInterface.addTab("8255", jPanel8255);
+            // Re-select checkboxes so they stay in sync visually if the menu is opened
+            if (jCheckBoxMenuItemIOPort != null) jCheckBoxMenuItemIOPort.setSelected(true);
+            if (jCheckBoxMenuItemPeriphralInterface != null) jCheckBoxMenuItemPeriphralInterface.setSelected(true);
         }
     }
 
@@ -4586,6 +4589,10 @@ public int find=0;
     /** Re-use the NetBeans-configured scroll pane for the step debugger (jTableAssembler) */
     public javax.swing.JScrollPane getDebuggerScrollPane() {
         return jScrollPane16;
+    }
+    
+    public javax.swing.JTabbedPane getTabbedPaneInterface() {
+        return jTabbedPaneInterface;
     }
 
 }
