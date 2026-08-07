@@ -38,6 +38,84 @@ public class ModernIDEUI extends JPanel {
     // ── State ─────────────────────────────────────────────────────────────────
     private final Assembler assembler;
 
+    // ── Multi-File Tab Management ──────────────────────────────────────────────
+    public static class EditorTab {
+        private String     title;
+        private File       file;
+        private TextEditor textEditor;
+        private boolean    isModified = false;
+        private JPanel     tabComponent;
+        private JLabel     lblTitle;
+        private JLabel     lblDot;
+        private JLabel     btnClose;
+        private javax.swing.event.DocumentListener docListener;
+
+        public EditorTab(String title, File file, TextEditor textEditor) {
+            this.title = title;
+            this.file = file;
+            this.textEditor = textEditor;
+        }
+
+        public String getTitle() { return title; }
+        public void setTitle(String title) {
+            this.title = title;
+            if (lblTitle != null) lblTitle.setText(title + " ");
+        }
+        public File getFile() { return file; }
+        public void setFile(File file) {
+            this.file = file;
+            if (file != null) setTitle(file.getName());
+        }
+        public TextEditor getTextEditor() { return textEditor; }
+        private String     assembleStatus = "NONE";
+        private JLabel     lblBadge;
+
+        public String getAssembleStatus() { return assembleStatus; }
+        public void setAssembleStatus(String status) {
+            this.assembleStatus = status;
+            if (lblBadge != null) {
+                if ("PASSED".equalsIgnoreCase(status)) {
+                    lblBadge.setText("✓ ");
+                    lblBadge.setForeground(COLOR_GREEN_ACCENT);
+                    lblBadge.setVisible(true);
+                } else if ("FAILED".equalsIgnoreCase(status)) {
+                    lblBadge.setText("✕ ");
+                    lblBadge.setForeground(COLOR_RED_ACCENT);
+                    lblBadge.setVisible(true);
+                } else {
+                    lblBadge.setVisible(false);
+                }
+            }
+        }
+
+        private String     savedContent = "";
+
+        public String getSavedContent() { return savedContent; }
+        public void setSavedContent(String content) {
+            this.savedContent = (content != null ? content : "");
+            checkModifiedState();
+        }
+
+        public void checkModifiedState() {
+            String current = (textEditor != null && textEditor.jTextPane1 != null) ? textEditor.jTextPane1.getText() : "";
+            boolean mod = !current.equals(savedContent);
+            setModified(mod);
+        }
+
+        public boolean isModified() { return isModified; }
+        public void setModified(boolean mod) {
+            this.isModified = mod;
+            if (lblDot != null) lblDot.setVisible(mod);
+            if (mod) setAssembleStatus("NONE");
+        }
+    }
+
+    private final List<EditorTab> openTabs        = new ArrayList<>();
+    private EditorTab             activeTab       = null;
+    private JPanel                tabsHeaderPanel;
+    private int                   untitledCounter  = 1;
+    private boolean               isDebuggerVisible = false;
+
     private JPanel     centerEditorContainer;
     private CardLayout editorCardLayout;
     private JPanel     welcomeViewPanel;
@@ -58,8 +136,6 @@ public class ModernIDEUI extends JPanel {
     private JLabel statusStateBadge;
     private JLabel statusInfoLabel;
 
-    private JLabel tabTitle;
-    private JLabel unsavedDot;
     private JLabel debuggerExplainerLabel;
 
     private JButton btnAssembleBar;
@@ -166,48 +242,18 @@ public class ModernIDEUI extends JPanel {
         bar.setBackground(COLOR_BG_TOOLBAR);
         bar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COLOR_CARD_BORDER));
 
-        bar.add(makeBtn("New",  "📄", e -> {
-            assembler.jTextAreaAssemblyLanguageEditor.setText("; New 8085 Program\n\nMVI A, 00H\nHLT\n");
-            assembler.textEditor.colorEditor();
-            setTabTitle("untitled.asm");
-            showEditorView();
-        }));
+        bar.add(makeBtn("New",  "📄", e -> newTab()));
         bar.add(makeBtn("Open", "📂", e -> {
             if (assembler.jMenuItemLoad_Assembly_Language_code != null)
                 assembler.jMenuItemLoad_Assembly_Language_code.doClick();
         }));
-        bar.add(makeBtn("Save", "💾", e -> {
-            if (assembler.jMenuItemSave_Assembly_Language_code != null)
-                assembler.jMenuItemSave_Assembly_Language_code.doClick();
-            markSaved();
-        }));
+        bar.add(makeBtn("Save", "💾", e -> saveActiveTab()));
         addSep(bar);
 
         // FIX #5 – Assemble with animated colour feedback
-        btnAssembleBar = makeBtn("Assemble", "⚒", e -> {
-            showEditorView();
-            btnAssembleBar.setText("⏳ Assembling...");
-            btnAssembleBar.setBackground(COLOR_AMBER_ACCENT);
-            btnAssembleBar.setForeground(new Color(0x30, 0x20, 0x00));
-            btnAssembleBar.setEnabled(false);
-            btnAssembleBar.putClientProperty("FlatLaf.style", "hoverBackground: null; pressedBackground: null;");
-            SwingUtilities.invokeLater(() -> {
-                if (assembler.jButtonAssemble != null) assembler.jButtonAssemble.doClick();
-                SwingUtilities.invokeLater(() -> {
-                    btnAssembleBar.setEnabled(true);
-                    btnAssembleBar.setText("✔️ Assembled");
-                    btnAssembleBar.setBackground(COLOR_GREEN_ACCENT);
-                    btnAssembleBar.setForeground(new Color(0x00, 0x25, 0x00));
-                });
-            });
-        });
+        btnAssembleBar = makeBtn("Assemble", "⚒", e -> assembleActiveTab());
         bar.add(btnAssembleBar);
-        
-        JButton btnCode = makeBtn("Code", "📝", e -> {
-            showEditorView(); // switches to WORKSPACE
-            if (assembler.jTabbedPaneAssemblerEditor != null) assembler.jTabbedPaneAssemblerEditor.setSelectedIndex(0);
-        });
-        bar.add(btnCode);
+        bar.add(makeBtn("Assemble All", "⚙", e -> assembleAllTabs()));
         
         JButton btnDisassemble = makeBtn("Disassemble", "↔", e -> {
             showEditorView(); // switches to WORKSPACE
@@ -230,10 +276,12 @@ public class ModernIDEUI extends JPanel {
         });
         bar.add(btnRunBar);
 
-        bar.add(makeBtn("Step",      "⏭", e -> { showDebuggerView(); if (assembler.jButtonStep     != null) assembler.jButtonStep.doClick(); }));
-        bar.add(makeBtn("Fwd",       "⏩", e -> { showDebuggerView(); if (assembler.jButtonForward  != null) assembler.jButtonForward.doClick(); }));
-        bar.add(makeBtn("Back",      "⏪", e -> { showDebuggerView(); if (assembler.jButtonBackward != null) assembler.jButtonBackward.doClick(); }));
+        bar.add(makeBtn("Step",      "⏭", e -> stepForwardAction()));
+        bar.add(makeBtn("Fwd",       "⏩", e -> stepForwardAction()));
+        bar.add(makeBtn("Back",      "⏪", e -> stepBackwardAction()));
+        bar.add(makeBtn("Debugger",  "🐞", e -> toggleDebuggerView()));
         bar.add(makeBtn("Pause",     "⏸", e -> {
+            showDebuggerView();
             if (assembler.jButtonStop != null) { assembler.jButtonStop.setVisible(true); assembler.jButtonStop.setText("Pause"); assembler.jButtonStop.doClick(); }
             setExecutionState("PAUSED");
         }));
@@ -243,6 +291,7 @@ public class ModernIDEUI extends JPanel {
         }));
         bar.add(makeBtn("Reset",     "↻",  e -> {
             if (assembler.jMenuItemClearMemory != null) assembler.jMenuItemClearMemory.doClick();
+            if (assembler.jButtonStop != null) { assembler.jButtonStop.setText("Stop"); assembler.jButtonStop.doClick(); }
             btnAssembleBar.setText("⚒ Assemble");
             btnAssembleBar.setBackground(COLOR_BG_CARD);
             btnAssembleBar.setForeground(COLOR_TEXT_PRIMARY);
@@ -459,50 +508,45 @@ public class ModernIDEUI extends JPanel {
         container.setBackground(COLOR_BG_DARK);
 
         // Tab bar
-        JPanel tabBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JPanel tabBar = new JPanel(new BorderLayout());
         tabBar.setBackground(COLOR_BG_HEADER);
-        tabBar.setPreferredSize(new Dimension(800, 32));
+        tabBar.setPreferredSize(new Dimension(800, 34));
         tabBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COLOR_CARD_BORDER));
 
-        JPanel activeTabPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
-        activeTabPanel.setBackground(COLOR_BG_DARK);
-        activeTabPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, COLOR_PRIMARY_BLUE));
+        tabsHeaderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        tabsHeaderPanel.setBackground(COLOR_BG_HEADER);
 
-        unsavedDot = new JLabel("* ");
-        unsavedDot.setFont(new Font("Segoe UI", Font.BOLD, 10));
-        unsavedDot.setForeground(COLOR_CYAN_ACCENT);
-        unsavedDot.setVisible(false);
+        JScrollPane tabScrollPane = new JScrollPane(tabsHeaderPanel);
+        tabScrollPane.setBorder(null);
+        tabScrollPane.setBackground(COLOR_BG_HEADER);
+        tabScrollPane.getViewport().setBackground(COLOR_BG_HEADER);
+        tabScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        tabScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 
-        tabTitle = new JLabel("untitled.asm ");
-        tabTitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        tabTitle.setForeground(COLOR_TEXT_PRIMARY);
-
-        JLabel closeBtn = new JLabel(" [X] ");
-        closeBtn.setFont(new Font("Consolas", Font.BOLD, 10));
-        closeBtn.setForeground(COLOR_TEXT_MUTED);
-        closeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        closeBtn.addMouseListener(new MouseAdapter() {
-            @Override public void mouseReleased(MouseEvent e) {
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                    int c = JOptionPane.showConfirmDialog(assembler,
-                        "Close this file? Unsaved changes will be lost.", "Close File",
-                        JOptionPane.YES_NO_OPTION);
-                    if (c == JOptionPane.YES_OPTION) {
-                        assembler.jTextAreaAssemblyLanguageEditor.setText("");
-                        tabTitle.setText("untitled.asm ");
-                        unsavedDot.setVisible(false);
-                        showWelcomeView();
-                    }
-                }
+        tabScrollPane.addMouseWheelListener(e -> {
+            JScrollBar scrollBar = tabScrollPane.getHorizontalScrollBar();
+            if (scrollBar != null) {
+                int amount = e.getWheelRotation() * 30;
+                scrollBar.setValue(scrollBar.getValue() + amount);
             }
-            @Override public void mouseEntered(MouseEvent e) { closeBtn.setForeground(COLOR_RED_ACCENT); }
-            @Override public void mouseExited(MouseEvent e)  { closeBtn.setForeground(COLOR_TEXT_MUTED);  }
         });
 
-        activeTabPanel.add(unsavedDot);
-        activeTabPanel.add(tabTitle);
-        activeTabPanel.add(closeBtn);
-        tabBar.add(activeTabPanel);
+        JButton btnAddTab = new JButton("+");
+        btnAddTab.setFont(new Font("Consolas", Font.BOLD, 15));
+        btnAddTab.setForeground(COLOR_TEXT_MUTED);
+        btnAddTab.setBackground(COLOR_BG_HEADER);
+        btnAddTab.setFocusPainted(false);
+        btnAddTab.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
+        btnAddTab.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnAddTab.setToolTipText("New File Tab");
+        btnAddTab.addActionListener(e -> newTab());
+        btnAddTab.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) { btnAddTab.setForeground(COLOR_CYAN_ACCENT); }
+            @Override public void mouseExited(MouseEvent e)  { btnAddTab.setForeground(COLOR_TEXT_MUTED); }
+        });
+
+        tabBar.add(tabScrollPane, BorderLayout.CENTER);
+        tabBar.add(btnAddTab, BorderLayout.EAST);
         container.add(tabBar, BorderLayout.NORTH);
 
         // Card layout
@@ -522,7 +566,7 @@ public class ModernIDEUI extends JPanel {
         // Left: Original Tabbed Pane (Assembler + Disassembler)
         if (assembler.jTabbedPaneAssemblerEditor != null) {
             assembler.jTabbedPaneAssemblerEditor.setBorder(null);
-            // Completely hide the tab headers as requested by user (the red circled buttons)
+            // Completely hide the tab headers as requested by user
             assembler.jTabbedPaneAssemblerEditor.setUI(new javax.swing.plaf.basic.BasicTabbedPaneUI() {
                 @Override
                 protected int calculateTabAreaHeight(int tabPlacement, int horizRunCount, int maxTabHeight) {
@@ -530,18 +574,6 @@ public class ModernIDEUI extends JPanel {
                 }
             });
             workspaceSplitPane.setLeftComponent(assembler.jTabbedPaneAssemblerEditor);
-            if (assembler.textEditor != null && assembler.textEditor.jTextPane1 != null) {
-                assembler.textEditor.jTextPane1.setBackground(new Color(0x1E, 0x1E, 0x1E));
-                assembler.textEditor.jTextPane1.setForeground(new Color(0xD4, 0xD4, 0xD4));
-                assembler.textEditor.jTextPane1.setCaretColor(Color.WHITE);
-                assembler.textEditor.jTextPane1.setEditable(true);
-                assembler.textEditor.jTextPane1.getDocument().addDocumentListener(
-                    new javax.swing.event.DocumentListener() {
-                        public void insertUpdate(javax.swing.event.DocumentEvent e)  { unsavedDot.setVisible(true); }
-                        public void removeUpdate(javax.swing.event.DocumentEvent e)  { unsavedDot.setVisible(true); }
-                        public void changedUpdate(javax.swing.event.DocumentEvent e) {}
-                    });
-            }
         }
         
         // Right: Debugger Panel
@@ -552,14 +584,31 @@ public class ModernIDEUI extends JPanel {
             ds.setBorder(null);
             ds.setBackground(COLOR_BG_DARK);
             ds.getViewport().setBackground(COLOR_BG_DARK);
+
+            JPanel dbgHeader = new JPanel(new BorderLayout());
+            dbgHeader.setBackground(COLOR_BG_CARD);
+            dbgHeader.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COLOR_CARD_BORDER));
+
             debuggerExplainerLabel = new JLabel(
                 "<html><b>Step Explainer:</b> Click Step Fwd to trace execution.</html>");
-            debuggerExplainerLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            debuggerExplainerLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
             debuggerExplainerLabel.setForeground(COLOR_CYAN_ACCENT);
-            debuggerExplainerLabel.setBorder(BorderFactory.createEmptyBorder(14, 20, 14, 20));
-            debuggerExplainerLabel.setBackground(COLOR_BG_CARD);
-            debuggerExplainerLabel.setOpaque(true);
-            debuggerPanel.add(debuggerExplainerLabel, BorderLayout.NORTH);
+            debuggerExplainerLabel.setBorder(BorderFactory.createEmptyBorder(10, 16, 10, 16));
+
+            JLabel closeDbgBtn = new JLabel(" [X] ");
+            closeDbgBtn.setFont(new Font("Consolas", Font.BOLD, 12));
+            closeDbgBtn.setForeground(COLOR_TEXT_MUTED);
+            closeDbgBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            closeDbgBtn.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 16));
+            closeDbgBtn.addMouseListener(new MouseAdapter() {
+                @Override public void mouseReleased(MouseEvent e) { hideDebuggerView(); }
+                @Override public void mouseEntered(MouseEvent e) { closeDbgBtn.setForeground(COLOR_RED_ACCENT); }
+                @Override public void mouseExited(MouseEvent e)  { closeDbgBtn.setForeground(COLOR_TEXT_MUTED); }
+            });
+
+            dbgHeader.add(debuggerExplainerLabel, BorderLayout.CENTER);
+            dbgHeader.add(closeDbgBtn, BorderLayout.EAST);
+            debuggerPanel.add(dbgHeader, BorderLayout.NORTH);
             debuggerPanel.add(ds, BorderLayout.CENTER);
         }
         workspaceSplitPane.setRightComponent(debuggerPanel);
@@ -575,23 +624,394 @@ public class ModernIDEUI extends JPanel {
         return container;
     }
 
+    // ── multi-tab manager logic ────────────────────────────────────────────────
+    public EditorTab newTab() {
+        String title = "untitled" + (untitledCounter == 1 ? "" : "-" + untitledCounter) + ".asm";
+        untitledCounter++;
+        String defaultCode = "; New 8085 Program\n\nMVI A, 00H\nHLT\n";
+        return newTabWithContent(title, defaultCode, null);
+    }
+
+    public EditorTab newTabWithContent(String title, String content, File file) {
+        TextEditor te = new TextEditor(assembler);
+        te.jTextPane1.setBackground(new Color(0x1E, 0x1E, 0x1E));
+        te.jTextPane1.setForeground(new Color(0xD4, 0xD4, 0xD4));
+        te.jTextPane1.setCaretColor(Color.WHITE);
+        te.jTextPane1.setEditable(true);
+        if (content != null) {
+            te.jTextPane1.setText(content);
+            te.colorEditor();
+        }
+
+        EditorTab tab = new EditorTab(title, file, te);
+        tab.savedContent = (content != null ? content : "");
+        JPanel comp = createTabUIComponent(tab);
+        openTabs.add(tab);
+
+        if (tabsHeaderPanel != null) {
+            tabsHeaderPanel.add(comp);
+            tabsHeaderPanel.revalidate();
+            tabsHeaderPanel.repaint();
+        }
+
+        tab.setModified(false);
+        selectTab(tab);
+        return tab;
+    }
+
+    public void openFile(File file) {
+        if (file == null || !file.exists()) return;
+        String absPath = file.getAbsolutePath();
+
+        for (EditorTab t : openTabs) {
+            if (t.getFile() != null && t.getFile().getAbsolutePath().equalsIgnoreCase(absPath)) {
+                selectTab(t);
+                return;
+            }
+        }
+
+        try {
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line).append("\n");
+            }
+            String loadedText = sb.toString();
+            EditorTab tab = newTabWithContent(file.getName(), loadedText, file);
+            tab.setSavedContent(loadedText);
+            tab.setModified(false);
+            addRecentFile(absPath);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(assembler, "Failed to load file: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void onFileSaved(File file) {
+        if (activeTab != null && file != null) {
+            activeTab.setFile(file);
+            activeTab.setSavedContent(activeTab.getTextEditor().jTextPane1.getText());
+            activeTab.setModified(false);
+            assembler.path = file.getAbsolutePath();
+            assembler.setTitle("AURA SIMULATOR - " + file.getAbsolutePath());
+            addRecentFile(file.getAbsolutePath());
+        }
+    }
+
+    public void selectTab(EditorTab tab) {
+        if (tab == null) return;
+        activeTab = tab;
+
+        for (EditorTab t : openTabs) {
+            if (t.tabComponent != null) {
+                boolean active = (t == activeTab);
+                t.tabComponent.setBackground(active ? COLOR_BG_DARK : COLOR_BG_HEADER);
+                t.tabComponent.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 0, 1, COLOR_CARD_BORDER),
+                    BorderFactory.createMatteBorder(0, 0, active ? 2 : 0, 0, active ? COLOR_PRIMARY_BLUE : COLOR_BG_HEADER)
+                ));
+                if (t.lblTitle != null) {
+                    t.lblTitle.setForeground(active ? COLOR_TEXT_PRIMARY : COLOR_TEXT_MUTED);
+                    t.lblTitle.setFont(new Font("Segoe UI", active ? Font.BOLD : Font.PLAIN, 12));
+                }
+            }
+        }
+
+        assembler.textEditor = tab.getTextEditor();
+        assembler.jTextAreaAssemblyLanguageEditor = tab.getTextEditor().jTextPane1;
+        assembler.path = (tab.getFile() != null ? tab.getFile().getAbsolutePath() : "");
+
+        if (assembler.getEditorScrollPane() != null) {
+            assembler.getEditorScrollPane().setViewportView(tab.getTextEditor().jTextPane1);
+        }
+
+        String pathOrTitle = tab.getFile() != null ? tab.getFile().getAbsolutePath() : tab.getTitle();
+        assembler.setTitle("AURA SIMULATOR - " + pathOrTitle);
+
+        tab.getTextEditor().colorEditor();
+        tab.getTextEditor().runLinting();
+
+        showEditorView();
+    }
+
+    public void closeTab(EditorTab tab) {
+        if (tab == null) return;
+        if (tab.isModified()) {
+            int option = JOptionPane.showConfirmDialog(
+                assembler,
+                "Save changes to " + tab.getTitle() + " before closing?",
+                "Close File",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
+                return;
+            }
+            if (option == JOptionPane.YES_OPTION) {
+                saveTab(tab);
+                if (tab.isModified()) {
+                    return;
+                }
+            }
+        }
+
+        int index = openTabs.indexOf(tab);
+        openTabs.remove(tab);
+        if (tabsHeaderPanel != null && tab.tabComponent != null) {
+            tabsHeaderPanel.remove(tab.tabComponent);
+            tabsHeaderPanel.revalidate();
+            tabsHeaderPanel.repaint();
+        }
+
+        if (activeTab == tab) {
+            if (!openTabs.isEmpty()) {
+                int nextIndex = Math.min(index, openTabs.size() - 1);
+                selectTab(openTabs.get(nextIndex));
+            } else {
+                activeTab = null;
+                showWelcomeView();
+            }
+        }
+    }
+
+    public void assembleActiveTab() {
+        if (activeTab == null) return;
+        showDebuggerView();
+        btnAssembleBar.setText("⏳ Assembling...");
+        btnAssembleBar.setBackground(COLOR_AMBER_ACCENT);
+        btnAssembleBar.setForeground(new Color(0x30, 0x20, 0x00));
+        btnAssembleBar.setEnabled(false);
+
+        SwingUtilities.invokeLater(() -> {
+            if (assembler.jButtonAssemble != null) assembler.jButtonAssemble.doClick();
+            showDebuggerView();
+            SwingUtilities.invokeLater(() -> {
+                btnAssembleBar.setEnabled(true);
+                List<SyntaxLinter.LintError> errors = SyntaxLinter.lint(activeTab.getTextEditor().jTextPane1.getText());
+                if (errors.isEmpty()) {
+                    activeTab.setAssembleStatus("PASSED");
+                    btnAssembleBar.setText("✔️ Assembled");
+                    btnAssembleBar.setBackground(COLOR_GREEN_ACCENT);
+                    btnAssembleBar.setForeground(new Color(0x00, 0x25, 0x00));
+                } else {
+                    activeTab.setAssembleStatus("FAILED");
+                    btnAssembleBar.setText("❌ " + errors.size() + " Error(s)");
+                    btnAssembleBar.setBackground(COLOR_RED_ACCENT);
+                    btnAssembleBar.setForeground(Color.WHITE);
+                }
+            });
+        });
+    }
+
+    public void assembleAllTabs() {
+        if (openTabs.isEmpty()) return;
+        int passed = 0;
+        int failed = 0;
+
+        for (EditorTab tab : openTabs) {
+            List<SyntaxLinter.LintError> errors = SyntaxLinter.lint(tab.getTextEditor().jTextPane1.getText());
+            if (errors.isEmpty()) {
+                tab.setAssembleStatus("PASSED");
+                passed++;
+            } else {
+                tab.setAssembleStatus("FAILED");
+                failed++;
+            }
+        }
+
+        if (failed == 0) {
+            JOptionPane.showMessageDialog(assembler, "All " + passed + " open file(s) assembled successfully!", "Assemble All", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(assembler, "Assemble All Complete:\n" + passed + " passed, " + failed + " failed with syntax errors.", "Assemble All", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    public void saveActiveTab() {
+        if (activeTab != null) {
+            saveTab(activeTab);
+        } else {
+            newTab();
+        }
+    }
+
+    public void saveTab(EditorTab tab) {
+        if (tab == null) return;
+        if (tab.getFile() != null) {
+            try {
+                String textToSave = tab.getTextEditor().jTextPane1.getText();
+                try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(tab.getFile())))) {
+                    out.print(textToSave);
+                }
+                tab.setSavedContent(textToSave);
+                tab.setModified(false);
+                addRecentFile(tab.getFile().getAbsolutePath());
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(assembler, "Error saving file: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            selectTab(tab);
+            if (assembler.jMenuItemSave_Assembly_Language_code != null) {
+                assembler.jMenuItemSave_Assembly_Language_code.doClick();
+            }
+        }
+    }
+
+    private JPanel createTabUIComponent(EditorTab tab) {
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 5));
+        p.setOpaque(true);
+        p.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        p.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 1, COLOR_CARD_BORDER));
+
+        JLabel dot = new JLabel("* ");
+        dot.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        dot.setForeground(COLOR_CYAN_ACCENT);
+        dot.setVisible(tab.isModified());
+
+        JLabel lbl = new JLabel(tab.getTitle() + " ");
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lbl.setForeground(COLOR_TEXT_PRIMARY);
+
+        JLabel closeBtn = new JLabel(" [X] ");
+        closeBtn.setFont(new Font("Consolas", Font.BOLD, 10));
+        closeBtn.setForeground(COLOR_TEXT_MUTED);
+        closeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        closeBtn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseReleased(MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    closeTab(tab);
+                }
+            }
+            @Override public void mouseEntered(MouseEvent e) { closeBtn.setForeground(COLOR_RED_ACCENT); }
+            @Override public void mouseExited(MouseEvent e)  { closeBtn.setForeground(COLOR_TEXT_MUTED); }
+        });
+
+        p.add(dot);
+        p.add(lbl);
+        p.add(closeBtn);
+
+        p.addMouseListener(new MouseAdapter() {
+            @Override public void mousePressed(MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    selectTab(tab);
+                }
+            }
+            @Override public void mouseEntered(MouseEvent e) {
+                if (tab != activeTab) p.setBackground(new Color(0x1A, 0x1B, 0x20));
+            }
+            @Override public void mouseExited(MouseEvent e) {
+                if (tab != activeTab) p.setBackground(COLOR_BG_HEADER);
+            }
+        });
+
+        tab.lblDot = dot;
+        tab.lblTitle = lbl;
+        tab.btnClose = closeBtn;
+        tab.tabComponent = p;
+
+        if (tab.textEditor != null && tab.textEditor.jTextPane1 != null) {
+            javax.swing.event.DocumentListener dl = new javax.swing.event.DocumentListener() {
+                public void insertUpdate(javax.swing.event.DocumentEvent e)  { SwingUtilities.invokeLater(tab::checkModifiedState); }
+                public void removeUpdate(javax.swing.event.DocumentEvent e)  { SwingUtilities.invokeLater(tab::checkModifiedState); }
+                public void changedUpdate(javax.swing.event.DocumentEvent e) { SwingUtilities.invokeLater(tab::checkModifiedState); }
+            };
+            tab.docListener = dl;
+            tab.textEditor.jTextPane1.getDocument().addDocumentListener(dl);
+        }
+
+        return p;
+    }
+
+    // ── step & debugger helpers ────────────────────────────────────────────────
+    public void stepForwardAction() {
+        if (activeTab == null) return;
+        showDebuggerView();
+
+        if (!"PASSED".equalsIgnoreCase(activeTab.getAssembleStatus())) {
+            if (assembler.jButtonAssemble != null) assembler.jButtonAssemble.doClick();
+            activeTab.setAssembleStatus("PASSED");
+        }
+
+        if (assembler.stop || assembler.jButtonStep.isVisible()) {
+            if (assembler.jButtonStep != null) {
+                assembler.jButtonStep.doClick();
+            }
+        }
+
+        if (assembler.jButtonForward != null) {
+            assembler.jButtonForward.doClick();
+        }
+
+        setExecutionState("STEPPING");
+    }
+
+    public void stepBackwardAction() {
+        if (activeTab == null) return;
+        showDebuggerView();
+
+        if (assembler.jButtonBackward != null && assembler.jButtonBackward.isEnabled()) {
+            assembler.jButtonBackward.doClick();
+        } else {
+            JOptionPane.showMessageDialog(assembler, "Cannot step backward. No previous step history.", "Debugger", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        setExecutionState("STEPPING");
+    }
+
     // ── card switch helpers ───────────────────────────────────────────────────
     public void showEditorView() {
+        if (openTabs.isEmpty()) {
+            newTab();
+            return;
+        }
+        if (activeTab == null && !openTabs.isEmpty()) {
+            selectTab(openTabs.get(0));
+        }
         if (editorCardLayout != null) editorCardLayout.show(centerEditorContainer, "WORKSPACE");
         if (workspaceSplitPane != null) {
-            workspaceSplitPane.setDividerLocation(1.0); // Hide right panel
+            workspaceSplitPane.setResizeWeight(isDebuggerVisible ? 0.45 : 1.0);
+            if (isDebuggerVisible) {
+                int totalWidth = workspaceSplitPane.getWidth();
+                if (totalWidth > 0) {
+                    workspaceSplitPane.setDividerLocation((int) (totalWidth * 0.45));
+                } else {
+                    workspaceSplitPane.setDividerLocation(0.45);
+                }
+            } else {
+                workspaceSplitPane.setDividerLocation(1.0);
+            }
         }
         if (assembler.jTabbedPaneAssemblerEditor != null) {
-            assembler.jTabbedPaneAssemblerEditor.setSelectedIndex(0); // Show Assembler
+            assembler.jTabbedPaneAssemblerEditor.setSelectedIndex(0);
         }
-        if (assembler.textEditor != null && assembler.textEditor.jTextPane1 != null)
-            assembler.textEditor.jTextPane1.requestFocusInWindow();
+        if (activeTab != null && activeTab.getTextEditor() != null && activeTab.getTextEditor().jTextPane1 != null) {
+            activeTab.getTextEditor().jTextPane1.requestFocusInWindow();
+        }
     }
     public void showDebuggerView() {
+        isDebuggerVisible = true;
         if (editorCardLayout != null) editorCardLayout.show(centerEditorContainer, "WORKSPACE");
         if (workspaceSplitPane != null) {
-            workspaceSplitPane.setDividerLocation(0.65); // Show debugger beside editor
+            workspaceSplitPane.setResizeWeight(0.45);
+            SwingUtilities.invokeLater(() -> {
+                int totalWidth = workspaceSplitPane.getWidth();
+                if (totalWidth > 0) {
+                    workspaceSplitPane.setDividerLocation((int) (totalWidth * 0.45));
+                } else {
+                    workspaceSplitPane.setDividerLocation(0.45);
+                }
+            });
         }
+    }
+    public void hideDebuggerView() {
+        isDebuggerVisible = false;
+        if (workspaceSplitPane != null) {
+            workspaceSplitPane.setDividerLocation(1.0);
+        }
+    }
+    public void toggleDebuggerView() {
+        if (isDebuggerVisible) hideDebuggerView();
+        else showDebuggerView();
     }
     public void showWelcomeView() {
         if (editorCardLayout != null) editorCardLayout.show(centerEditorContainer, "WELCOME");
@@ -601,8 +1021,12 @@ public class ModernIDEUI extends JPanel {
         if (debuggerExplainerLabel != null)
             debuggerExplainerLabel.setText("<html><b>Step Explainer:</b> " + text + "</html>");
     }
-    public void setTabTitle(String f) { if (tabTitle != null) tabTitle.setText(f + " "); }
-    public void markSaved()           { if (unsavedDot != null) unsavedDot.setVisible(false); }
+    public void setTabTitle(String f) {
+        if (activeTab != null) activeTab.setTitle(f);
+    }
+    public void markSaved() {
+        if (activeTab != null) activeTab.setModified(false);
+    }
 
     // ════════════════════════════════════════════════════════════════════════
     // RECENT FILES  (FIX #4)
@@ -667,21 +1091,7 @@ public class ModernIDEUI extends JPanel {
             JOptionPane.showMessageDialog(assembler, "File not found:\n" + path, "Error", JOptionPane.ERROR_MESSAGE);
             recentFiles.remove(path); saveRecentFiles(); rebuildRecentList(); return;
         }
-        try {
-            StringBuilder sb = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-                String line;
-                while ((line = br.readLine()) != null) sb.append(line).append("\n");
-            }
-            assembler.jTextAreaAssemblyLanguageEditor.setText(sb.toString());
-            assembler.textEditor.colorEditor();
-            setTabTitle(f.getName());
-            markSaved();
-            addRecentFile(path);
-            showEditorView();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(assembler, "Failed to load: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        openFile(f);
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -732,13 +1142,7 @@ public class ModernIDEUI extends JPanel {
         btnNew.setFocusPainted(false);
         btnNew.setBorder(BorderFactory.createEmptyBorder(9, 18, 9, 18));
         btnNew.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnNew.addActionListener(e -> {
-            assembler.jTextAreaAssemblyLanguageEditor.setText(
-                "; Aura Studio 8085 Program\n\nMVI A, 05H\nMVI B, 03H\nADD B\nHLT\n");
-            assembler.textEditor.colorEditor();
-            setTabTitle("untitled.asm");
-            showEditorView();
-        });
+        btnNew.addActionListener(e -> newTab());
 
         JButton btnOpen = mkWelBtn("📂 Open Program");
         btnOpen.addActionListener(e -> {
@@ -747,13 +1151,11 @@ public class ModernIDEUI extends JPanel {
         });
 
         JButton btnSample = mkWelBtn("✨ Open Sample");
-        btnSample.addActionListener(e -> {
-            assembler.jTextAreaAssemblyLanguageEditor.setText(
-                "; 8085 Sample: Addition\nMVI A, 05H\nMVI B, 0AH\nADD B\nSTA C050H\nHLT\n");
-            assembler.textEditor.colorEditor();
-            setTabTitle("sample.asm");
-            showEditorView();
-        });
+        btnSample.addActionListener(e -> newTabWithContent(
+            "sample.asm",
+            "; 8085 Sample: Addition\nMVI A, 05H\nMVI B, 0AH\nADD B\nSTA C050H\nHLT\n",
+            null
+        ));
 
         btnRow.add(btnNew);
         btnRow.add(btnOpen);

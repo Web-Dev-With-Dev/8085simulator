@@ -109,24 +109,21 @@ public class FileChooser extends javax.swing.JFrame {
             String btnText = jFileChooser1.getApproveButtonText();
 
             if (btnText.equalsIgnoreCase("Load Mnemonics")) {
-                String s = "", line;
-                try {
-                    BufferedReader in = new BufferedReader(new FileReader(path));
-                    while ((line = in.readLine()) != null) {
-                        s = s + line + "\n";
+                if (o.modernIDEUI != null) {
+                    o.modernIDEUI.openFile(selectedFile);
+                } else {
+                    String s = "", line;
+                    try {
+                        BufferedReader in = new BufferedReader(new FileReader(path));
+                        while ((line = in.readLine()) != null) {
+                            s = s + line + "\n";
+                        }
+                        o.jTextAreaAssemblyLanguageEditor.setText(s);
+                        o.textEditor.colorEditor();
+                        in.close();
+                    } catch (Exception e) {
+                        Popup.show("Failed to load the file.");
                     }
-                    o.jTextAreaAssemblyLanguageEditor.setText(s);
-                    o.textEditor.colorEditor();
-                    in.close();
-                    // Update tab title and show editor
-                    if (o.modernIDEUI != null) {
-                        String fname = selectedFile.getName();
-                        o.modernIDEUI.setTabTitle(fname);
-                        o.modernIDEUI.markSaved();
-                        o.modernIDEUI.showEditorView();
-                    }
-                } catch (Exception e) {
-                    Popup.show("Failed to load the file.");
                 }
             } else if (btnText.equalsIgnoreCase("Save Mnemonics")) {
                 try {
@@ -134,13 +131,12 @@ public class FileChooser extends javax.swing.JFrame {
                 } catch (Exception e) {
                 }
                 try {
-                    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path + ".asm")));
+                    File saveFile = new File(path + ".asm");
+                    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(saveFile)));
                     out.print(o.jTextAreaAssemblyLanguageEditor.getText());
                     out.close();
-                    // Update tab title and mark saved
                     if (o.modernIDEUI != null) {
-                        o.modernIDEUI.setTabTitle(selectedFile.getName().replace("", "") + ".asm");
-                        o.modernIDEUI.markSaved();
+                        o.modernIDEUI.onFileSaved(saveFile);
                     }
                 } catch (Exception e) {
                     Popup.show("Unable to save the file.");
