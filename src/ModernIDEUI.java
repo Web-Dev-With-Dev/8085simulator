@@ -5,6 +5,8 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
@@ -182,9 +184,138 @@ public class ModernIDEUI extends JPanel {
         add(mainWorkspace, BorderLayout.CENTER);
         add(createStatusBar(), BorderLayout.SOUTH);
 
+        setupKeyboardShortcuts();
+
         // FIX #6 – open on Welcome screen, not untitled.asm
         SwingUtilities.invokeLater(this::showWelcomeView);
         refreshData();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // KEYBOARD SHORTCUTS (WHEN_IN_FOCUSED_WINDOW)
+    // ════════════════════════════════════════════════════════════════════════
+    private void setupKeyboardShortcuts() {
+        InputMap im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = getActionMap();
+
+        int menuMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+
+        // Ctrl+N -> New Tab
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, menuMask), "shortcut_new");
+        am.put("shortcut_new", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { newTab(); }
+        });
+
+        // Ctrl+O -> Open
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, menuMask), "shortcut_open");
+        am.put("shortcut_open", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                if (assembler.jMenuItemLoad_Assembly_Language_code != null)
+                    assembler.jMenuItemLoad_Assembly_Language_code.doClick();
+            }
+        });
+
+        // Ctrl+S -> Save
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, menuMask), "shortcut_save");
+        am.put("shortcut_save", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { saveActiveTab(); }
+        });
+
+        // Ctrl+W -> Close Tab
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, menuMask), "shortcut_close_tab");
+        am.put("shortcut_close_tab", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { if (activeTab != null) closeTab(activeTab); }
+        });
+
+        // F5 -> Assemble
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "shortcut_assemble");
+        am.put("shortcut_assemble", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { assembleActiveTab(); }
+        });
+
+        // F6 -> Run
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0), "shortcut_run");
+        am.put("shortcut_run", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                showEditorView();
+                if (assembler.jButtonRun != null) assembler.jButtonRun.doClick();
+                setExecutionState("RUNNING");
+            }
+        });
+
+        // F7 -> Step
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0), "shortcut_step");
+        am.put("shortcut_step", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { stepForwardAction(); }
+        });
+
+        // F8 -> Autocorrect
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), "shortcut_autocorrect");
+        am.put("shortcut_autocorrect", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                showEditorView();
+                if (assembler.jButtonAutocorrect != null) assembler.jButtonAutocorrect.doClick();
+            }
+        });
+
+        // F9 -> Breakpoint / Memory Range
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0), "shortcut_breakpoint");
+        am.put("shortcut_breakpoint", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                if (assembler.jMenuItem2 != null) assembler.jMenuItem2.doClick();
+            }
+        });
+
+        // F3 -> Disassemble
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "shortcut_disassemble");
+        am.put("shortcut_disassemble", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                showEditorView();
+                if (assembler.jTabbedPaneAssemblerEditor != null) assembler.jTabbedPaneAssemblerEditor.setSelectedIndex(1);
+                if (assembler.jButtonDisassemble != null) {
+                    assembler.jButtonDisassemble.setVisible(true);
+                    assembler.jButtonDisassemble.doClick();
+                }
+            }
+        });
+
+        // Ctrl+R -> Reset
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, menuMask), "shortcut_reset");
+        am.put("shortcut_reset", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                if (assembler.jMenuItemClearMemory != null) assembler.jMenuItemClearMemory.doClick();
+                if (assembler.jButtonStop != null) { assembler.jButtonStop.setText("Stop"); assembler.jButtonStop.doClick(); }
+                btnAssembleBar.setText("⚒ Assemble");
+                btnAssembleBar.setBackground(COLOR_BG_CARD);
+                btnAssembleBar.setForeground(COLOR_TEXT_PRIMARY);
+                btnAssembleBar.putClientProperty("FlatLaf.style", "");
+                setExecutionState("STOPPED");
+            }
+        });
+
+        // Ctrl+Tab -> Next Tab
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, menuMask), "shortcut_next_tab");
+        am.put("shortcut_next_tab", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                if (openTabs.size() > 1 && activeTab != null) {
+                    int idx = openTabs.indexOf(activeTab);
+                    int nextIdx = (idx + 1) % openTabs.size();
+                    selectTab(openTabs.get(nextIdx));
+                }
+            }
+        });
+
+        // Ctrl+Shift+Tab -> Prev Tab
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, menuMask | java.awt.event.InputEvent.SHIFT_DOWN_MASK), "shortcut_prev_tab");
+        am.put("shortcut_prev_tab", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                if (openTabs.size() > 1 && activeTab != null) {
+                    int idx = openTabs.indexOf(activeTab);
+                    int prevIdx = (idx - 1 + openTabs.size()) % openTabs.size();
+                    selectTab(openTabs.get(prevIdx));
+                }
+            }
+        });
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -253,7 +384,6 @@ public class ModernIDEUI extends JPanel {
         // FIX #5 – Assemble with animated colour feedback
         btnAssembleBar = makeBtn("Assemble", "⚒", e -> assembleActiveTab());
         bar.add(btnAssembleBar);
-        bar.add(makeBtn("Assemble All", "⚙", e -> assembleAllTabs()));
         
         JButton btnDisassemble = makeBtn("Disassemble", "↔", e -> {
             showEditorView(); // switches to WORKSPACE

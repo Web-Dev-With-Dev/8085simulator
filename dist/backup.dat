@@ -1,10 +1,5 @@
 false
-; Aura Studio 8085 Program
+; New 8085 Program
 
-            MVI     A, 01H
-            MVI     B, FFH
-            ADD     B
-            HLT
-
-
-
+MVI A, 00H
+HLT
