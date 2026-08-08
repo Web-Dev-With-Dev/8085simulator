@@ -60,6 +60,27 @@ public class TextEditor {
         h.initHexcode();
         code = h.S;
         jTextPane1.getDocument().putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
+        jTextPane1.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                onDocumentChanged();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                onDocumentChanged();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            }
+
+            private void onDocumentChanged() {
+                if (asm != null && !asm.isAssembling) {
+                    asm.resetAssembleStatus();
+                }
+            }
+        });
         autoCompleter = new AutoCompleter(jTextPane1);
     }
 
@@ -176,7 +197,7 @@ public class TextEditor {
                 bg = Color.BLACK;
             double luminance = 0.299 * bg.getRed() + 0.587 * bg.getGreen() + 0.114 * bg.getBlue();
             boolean isDark = (luminance < 128);
-            Color defaultTextColor = isDark ? new Color(0xD4D4D4) : Color.black;
+            Color defaultTextColor = isDark ? new Color(0xD4, 0xD4, 0xD4) : new Color(0x0F, 0x17, 0x2A);
             jTextPane1.setForeground(defaultTextColor);
 
             Color c = defaultTextColor;
@@ -226,19 +247,19 @@ public class TextEditor {
             Color lastColor = defaultTextColor;
             for (int i = 0, mode = 0; i < s.length(); i++) {
                 if (s.charAt(i) == '#') {
-                    c = isDark ? new Color(0xFF6B6B) : new Color(0xCC0000);
+                    c = isDark ? new Color(0xFF, 0x6B, 0x6B) : new Color(0x7C, 0x3A, 0xED);
                     mode = 3;
                 } else if (s.charAt(i) == '.') {
-                    c = isDark ? new Color(0xFF6B6B) : new Color(0xCC0000);
+                    c = isDark ? new Color(0xFF, 0x6B, 0x6B) : new Color(0x7C, 0x3A, 0xED);
                     mode = 3;
                 } else if (s.charAt(i) == ';') {
-                    c = isDark ? new Color(0x6A9955) : new Color(0x808080);
+                    c = isDark ? new Color(0x6A, 0x99, 0x55) : new Color(0x64, 0x74, 0x8B);
                     mode = 2;
                 } else if (s.charAt(i) == '/') {
-                    c = isDark ? new Color(0x6A9955) : new Color(0x808080);
+                    c = isDark ? new Color(0x6A, 0x99, 0x55) : new Color(0x64, 0x74, 0x8B);
                     mode = 2;
                 } else if (s.charAt(i) == 0x207) {
-                    c = isDark ? new Color(0x4EC9B0) : new Color(0x00CC66);
+                    c = isDark ? new Color(0x4E, 0xC9, 0xB0) : new Color(0x05, 0x96, 0x69);
                     mode = 1;
                 } else if (s.charAt(i) == '\n') {
                     c = defaultTextColor;
@@ -247,7 +268,7 @@ public class TextEditor {
 
                 if (mode < 2) {
                     if (s.charAt(i) == 0x205) {
-                        c = isDark ? new Color(0x569CD6) : new Color(0x0066CC);
+                        c = isDark ? new Color(0x56, 0x9C, 0xD6) : new Color(0x00, 0x78, 0xD4);
                     } else if (s.charAt(i) == 0x206) {
                         c = defaultTextColor;
                     }
@@ -255,9 +276,9 @@ public class TextEditor {
 
                 if (mode == 3) {
                     if (s.charAt(i) == 0x200) {
-                        c = isDark ? new Color(0xDCDCAA) : new Color(0x660000);
+                        c = isDark ? new Color(0xDC, 0xDC, 0xAA) : new Color(0xD9, 0x77, 0x06);
                     } else if (s.charAt(i) == 0x201) {
-                        c = isDark ? new Color(0xFF6B6B) : new Color(0xCC0000);
+                        c = isDark ? new Color(0xFF, 0x6B, 0x6B) : new Color(0x7C, 0x3A, 0xED);
                     }
                 }
 

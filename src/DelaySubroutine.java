@@ -11,6 +11,7 @@ public class DelaySubroutine extends javax.swing.JFrame {
         this.o = o;
         initComponents();
         choiceHide(3);
+        ModernIDEUI.applyObsidianTheme(this);
     }
 
     /**

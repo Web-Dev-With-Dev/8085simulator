@@ -16,6 +16,7 @@ public class InterruptServiceSubroutine extends javax.swing.JFrame {
         initComponents();
         initialize();
         setJtextField();
+        ModernIDEUI.applyObsidianTheme(this);
     }
 
     public void initialize()

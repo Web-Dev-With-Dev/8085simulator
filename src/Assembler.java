@@ -971,7 +971,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                 .addComponent(jRadioButtonUsedMemoryLocation, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jRadioButtonStoreMemoryLocation, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(131, 131, 131))
+                .addContainerGap())
         );
 
         jTabbedPaneMemory.addTab("Memory", jInternalFrame2);
@@ -1114,7 +1114,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                 .addComponent(jButtonAnalizeCW)
                 .addGap(14, 14, 14)
                 .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(286, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         jTabbedPaneInterface.addTab("8255", jPanel8255);
@@ -2491,6 +2491,34 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
    }//GEN-LAST:event_jTabbedPaneAssemblerEditorMouseClicked
 
 
+    public boolean isAssembling = false;
+
+    public void updateAssembleStatus(boolean success) {
+        if (success) {
+            jButtonAssemble.setText("✓ Assembled");
+            jButtonAssemble.setBackground(new java.awt.Color(0x22, 0xC5, 0x5E));
+            jButtonAssemble.setForeground(java.awt.Color.WHITE);
+            jButtonAssemble.setOpaque(true);
+        } else {
+            jButtonAssemble.setText("✖ Error");
+            jButtonAssemble.setBackground(new java.awt.Color(0xEF, 0x44, 0x44));
+            jButtonAssemble.setForeground(java.awt.Color.WHITE);
+            jButtonAssemble.setOpaque(true);
+        }
+        if (modernIDEUI != null) {
+            modernIDEUI.setAssembleStatus(success);
+        }
+    }
+
+    public void resetAssembleStatus() {
+        jButtonAssemble.setText("Assemble");
+        jButtonAssemble.setBackground(null);
+        jButtonAssemble.setForeground(null);
+        if (modernIDEUI != null) {
+            modernIDEUI.resetAssembleStatus();
+        }
+    }
+
    private void jButtonAssembleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAssembleActionPerformed
 
        jTabbedPaneEditor.setSelectedComponent(jTabbedPaneEditor.getComponentAt(1));
@@ -2562,9 +2590,18 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
          }catch(Exception e){
          }
       }
-      Assemble();
-      jTableAssembler.scrollRectToVisible(jTableAssembler.getCellRect(0, 0, false));
-      errorCheck();
+      
+      boolean hasError = false;
+      try {
+          isAssembling = true;
+          Assemble();
+          jTableAssembler.scrollRectToVisible(jTableAssembler.getCellRect(0, 0, false));
+          hasError = errorCheck();
+      } finally {
+          isAssembling = false;
+      }
+      updateAssembleStatus(!hasError);
+
       jTextAreaAssemblyLanguageEditor.requestFocus();
       jTextAreaAssemblyLanguageEditor.getHighlighter().removeAllHighlights();
       check:
@@ -2706,8 +2743,9 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
 
    }
 
-   private void errorCheck()
+   public boolean errorCheck()
     {
+        boolean hasError = false;
         loop:
         for(int i=0,row=0;jTableAssembler.getValueAt(i, 4)!=null&&i<999;i++)
         {
@@ -2721,6 +2759,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                  jLabelError.setVisible(true);
                  jLabelError.setText("Error : At Line no "+row);
                  jTableAssembler.scrollRectToVisible(jTableAssembler.getCellRect(i, 0, false));
+                 hasError = true;
                  break loop;
                   }
             else {
@@ -2728,6 +2767,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
             }
             }
         }
+        return hasError;
     }
 
 
@@ -3032,7 +3072,22 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
        stopMnemonic.jTextField1.setText(String.valueOf(speed[0]));
        stopMnemonic.s="Seconds";
    }//GEN-LAST:event_jRadioButtonMenuItemStepByStepActionPerformed
-    trainer trainerObj;
+    public trainer trainerObj;
+
+    public void openIOPortPanel() {
+        jTableAssembler.setVisible(true);
+        if (trainerObj == null) {
+            trainerObj = new trainer(this);
+        }
+        trainerObj.setVisible(true);
+        trainerObj.toFront();
+    }
+
+    public void openSettings() {
+        SettingsDialog dialog = new SettingsDialog(this);
+        dialog.setVisible(true);
+        dialog.toFront();
+    }
    private void jMenuItem26ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem26ActionPerformed
 
             jTableAssembler.setVisible(true);
@@ -3978,8 +4033,8 @@ public int find=0;
     public javax.swing.JTextArea jTextAreaDisassembler;
     private javax.swing.JTextArea jTextAreaLabel;
     public javax.swing.JTextField jTextFieldBeginFrom;
-    private javax.swing.JTextField jTextFieldMemBegin;
-    private javax.swing.JTextField jTextFieldMemStop;
+    public javax.swing.JTextField jTextFieldMemBegin;
+    public javax.swing.JTextField jTextFieldMemStop;
     // End of variables declaration//GEN-END:variables
 
     // --- Modern Enhancements: Dark Mode, Format Code & Syntax Linting ---
@@ -4246,6 +4301,8 @@ public int find=0;
 
             // If ModernIDEUI was set, re-ensure it is the content pane (theme update may reset it)
             if (hasModernUI) {
+                ModernIDEUI.isDarkMode = !"light".equalsIgnoreCase(mode);
+                ModernIDEUI.updateThemeColors();
                 if (getContentPane().getComponentCount() == 0 ||
                         !(getContentPane().getComponent(0) instanceof ModernIDEUI)) {
                     getContentPane().removeAll();
@@ -4552,16 +4609,7 @@ public int find=0;
     }
 
     /** Toggle the I/O Port panel on */
-    public void openIOPortPanel() {
-        if (jTabbedPaneInterface != null) {
-            jTabbedPaneInterface.removeAll();
-            if (jScrollPane4 != null) jTabbedPaneInterface.addTab("I/O Port Editor", jScrollPane4);
-            if (jPanel8255 != null) jTabbedPaneInterface.addTab("8255", jPanel8255);
-            // Re-select checkboxes so they stay in sync visually if the menu is opened
-            if (jCheckBoxMenuItemIOPort != null) jCheckBoxMenuItemIOPort.setSelected(true);
-            if (jCheckBoxMenuItemPeriphralInterface != null) jCheckBoxMenuItemPeriphralInterface.setSelected(true);
-        }
-    }
+    
 
     /** Switch to the Disassembler tab and run disassemble */
     public void openDisassemblerTab() {
@@ -4575,11 +4623,7 @@ public int find=0;
     }
 
     /** Open the Settings dialog */
-    public void openSettings() {
-        if (jMenuItem1 != null) {
-            jMenuItem1.doClick();
-        }
-    }
+    
 
     /** Re-use the NetBeans-configured scroll pane for the editor */
     public javax.swing.JScrollPane getEditorScrollPane() {
@@ -4593,6 +4637,19 @@ public int find=0;
     
     public javax.swing.JTabbedPane getTabbedPaneInterface() {
         return jTabbedPaneInterface;
+    }
+
+
+    public javax.swing.JInternalFrame getRegistersInternalFrame() {
+        return jInternalFrame3;
+    }
+
+    public javax.swing.JInternalFrame getMemoryInternalFrame() {
+        return jInternalFrame2;
+    }
+
+    public javax.swing.JInternalFrame getDevicesInternalFrame() {
+        return jInternalFrame4;
     }
 
 }
