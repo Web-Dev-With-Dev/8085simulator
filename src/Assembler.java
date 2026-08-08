@@ -2201,7 +2201,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
       if(stop|| jButtonStop.getText().equalsIgnoreCase("Stop"))
       {
         matrix.select = 0;
-        matrix.clearHistory();
+        // matrix.clearHistory(); removed to allow backward stepping from HLT
         jButtonForward.setVisible(false);
         jButtonBackward.setVisible(false);
         jButtonBackward.setEnabled(false);
@@ -2239,13 +2239,19 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
 
     }//GEN-LAST:event_jButtonStopActionPerformed
 
-    private void jButtonBackwardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackwardActionPerformed
+    public void jButtonBackwardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackwardActionPerformed
        if (matrix.getHistorySize() == 0) {
            jButtonBackward.setEnabled(false);
            return;
        }
        oIndex--;
        matrix.readCopy(matrix);       
+        stop = false;
+        jButtonForward.setVisible(true);
+        jButtonBackward.setVisible(true);
+        jButtonStop.setVisible(true);
+        jButtonRun.setVisible(false);
+        jButtonStep.setVisible(false);
        try {
            if (matrix.select < 1000 && jTableAssembler.getValueAt(matrix.select, 3) != null) {
                jTableAssembler.setRowSelectionAllowed(true);
@@ -2931,7 +2937,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
        return dir.delete();
 }
    
-   private void jButtonForwardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonForwardActionPerformed
+   public void jButtonForwardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonForwardActionPerformed
 
        jButtonBackward.setEnabled(true);
        if(matrix.stopAddress<matrix.PC||matrix.beginAddress>matrix.PC){

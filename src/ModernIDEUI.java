@@ -152,6 +152,14 @@ public class ModernIDEUI extends JPanel {
     // ── Constructor ───────────────────────────────────────────────────────────
     public ModernIDEUI(Assembler asm) {
         this.assembler = asm;
+        if (this.assembler.jTextAreaAssemblyLanguageEditor != null) {
+            this.assembler.jTextAreaAssemblyLanguageEditor.addCaretListener(new javax.swing.event.CaretListener() {
+                public void caretUpdate(javax.swing.event.CaretEvent e) {
+                    updateStatusBar();
+                }
+            });
+        }
+
         loadRecentFiles();
         setLayout(new BorderLayout());
         setBackground(COLOR_BG_DARK);
@@ -1069,7 +1077,7 @@ public class ModernIDEUI extends JPanel {
         }
 
         if (assembler.jButtonForward != null) {
-            assembler.jButtonForward.doClick();
+            assembler.jButtonForwardActionPerformed(null);
         }
 
         setExecutionState("STEPPING");
@@ -1080,7 +1088,7 @@ public class ModernIDEUI extends JPanel {
         showDebuggerView();
 
         if (assembler.jButtonBackward != null && assembler.jButtonBackward.isEnabled()) {
-            assembler.jButtonBackward.doClick();
+            assembler.jButtonBackwardActionPerformed(null);
         } else {
             JOptionPane.showMessageDialog(assembler, "Cannot step backward. No previous step history.", "Debugger", JOptionPane.INFORMATION_MESSAGE);
         }
@@ -1705,6 +1713,23 @@ public class ModernIDEUI extends JPanel {
     }
 
     // ── Live data refresh (called by Assembler after every step/run) ──────────
+    
+        private void updateStatusBar() {
+        if (statusInfoLabel == null || assembler == null || assembler.matrix == null) return;
+        int line = 1;
+        int col = 1;
+        try {
+            if (assembler.jTextAreaAssemblyLanguageEditor != null) {
+                int caretPos = assembler.jTextAreaAssemblyLanguageEditor.getCaretPosition();
+                javax.swing.text.Element root = assembler.jTextAreaAssemblyLanguageEditor.getDocument().getDefaultRootElement();
+                line = root.getElementIndex(caretPos) + 1;
+                col = caretPos - root.getElement(line - 1).getStartOffset() + 1;
+            }
+        } catch (Exception ex) {}
+        
+        statusInfoLabel.setText("Ln " + line + ", Col " + col + "  |  UTF-8  |  8085 Assembly  |  Instructions: "
+                + assembler.matrix.instructionCounter + "  |  Cycles: " + assembler.matrix.clockCycleCounter);
+    }
     public void refreshData() {
         if (assembler == null || assembler.matrix == null) return;
         Matrix m = assembler.matrix;
@@ -1749,9 +1774,7 @@ public class ModernIDEUI extends JPanel {
                 statusStateBadge.setBackground(COLOR_GREEN_ACCENT);
             }
         }
-        if (statusInfoLabel != null)
-            statusInfoLabel.setText("Ln 1, Col 1  |  UTF-8  |  8085 Assembly  |  Instructions: "
-                + m.instructionCounter + "  |  Cycles: " + m.clockCycleCounter);
+        updateStatusBar();
 
         // Memory table
         if (memoryTableModel != null) {

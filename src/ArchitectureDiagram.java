@@ -45,12 +45,12 @@ public class ArchitectureDiagram extends JFrame {
 
         JButton btnBack = createStyledButton("<< Step Backward", new Color(0x4B, 0x55, 0x63));
         btnBack.addActionListener(e -> {
-            if (assembler.jButtonBackward.isEnabled()) assembler.jButtonBackward.doClick();
+            assembler.jButtonBackwardActionPerformed(null);
         });
 
         JButton btnFwd = createStyledButton("Step Forward >>", COLOR_HIGHLIGHT);
         btnFwd.addActionListener(e -> {
-            if (assembler.jButtonForward.isEnabled()) assembler.jButtonForward.doClick();
+            assembler.jButtonForwardActionPerformed(null);
         });
 
         controlPanel.add(btnBack);
@@ -281,7 +281,7 @@ public class ArchitectureDiagram extends JFrame {
         private void drawTitle(Graphics2D g2) {
             g2.setColor(COLOR_TEXT);
             g2.setFont(new Font("Segoe UI", Font.BOLD, 26));
-            g2.drawString("Real-World CPU Data Flow", 40, 45);
+            g2.drawString("", 40, 45);
         }
 
         private void drawCPU(Graphics2D g2) {
