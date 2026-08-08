@@ -96,21 +96,14 @@ public class SplashScreen extends JWindow {
 
                     // Auto-advance when video ends or encounters error
                     player.setOnEndOfMedia(() -> launchMainApp(player));
-                    player.setOnError(() -> launchMainApp(player));
+                    player.setOnError(()    -> launchMainApp(player));
 
-                    // Safety cap at 3.5 seconds max for video splash
-                    player.currentTimeProperty().addListener((obs, oldT, newT) -> {
-                        if (newT.greaterThanOrEqualTo(Duration.seconds(3.5))) {
-                            launchMainApp(player);
-                        }
-                    });
-
-                    // Click or key press to skip immediately
+                    // Click or key press to skip
                     scene.setOnMouseClicked(e -> launchMainApp(player));
                     scene.setOnKeyPressed(e  -> launchMainApp(player));
 
-                    // Fail-safe Swing Timer: launch main app after 4 seconds guaranteed
-                    Timer failSafeTimer = new Timer(4000, e -> launchMainApp(player));
+                    // Safety fail-safe: launch after 60 seconds if video hasn't ended
+                    Timer failSafeTimer = new Timer(60000, e -> launchMainApp(player));
                     failSafeTimer.setRepeats(false);
                     failSafeTimer.start();
 

@@ -1150,6 +1150,11 @@ public class ModernIDEUI extends JPanel {
     public void updateStepExplainer(String text) {
         if (debuggerExplainerLabel != null)
             debuggerExplainerLabel.setText("<html><b>Step Explainer:</b> " + text + "</html>");
+        // Also record in step log for practical export
+        if (assembler != null && text != null && !text.trim().isEmpty()) {
+            String plain = text.replaceAll("<[^>]+>", "").trim();
+            if (!plain.isEmpty()) assembler.addStepLog(plain);
+        }
     }
     public void setTabTitle(String f) {
         if (activeTab != null) activeTab.setTitle(f);

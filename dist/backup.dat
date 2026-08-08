@@ -1,5 +1,33 @@
 false
-; New 8085 Program
+            MVI     B, 01 H
+            MOV     A, B
+            STA     4050
 
-MVI A, 00H
-HLT
+            MVI     B, 02 H
+            MOV     A, B
+            STA     4051
+
+            MVI     B, 03 H
+            MOV     A, B
+            STA     4052
+
+            MVI     B, 04 H
+            MOV     A, B
+            STA     4053
+
+            MVI     B, 05 H
+            MOV     A, B
+            STA     4054
+
+            LXI     H, 4050
+            MVI     C, 05H
+            XRA     A
+
+LOOP:       ADD     M
+            INX     H
+            DCR     C
+            JNZ     LOOP
+            HLT
+
+
+

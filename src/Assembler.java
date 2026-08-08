@@ -41,7 +41,9 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
     int continueFrom=0;
     String fileSeparator=System.getProperty("file.separator");
     public ModernIDEUI modernIDEUI;
-    
+    public ArchitectureDiagram architectureDiagram;
+    public String currentMnemonic = "";
+    public String currentExplanation = "";
 
     public Assembler() {
 
@@ -51,6 +53,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         preprocessor = new Preprocessor();
         disassembler = new Disassembler(this);
         textEditor=new TextEditor(this);
+        architectureDiagram = new ArchitectureDiagram(this);
         initComponents();
         // Set AURA logo on all internal frame title bars and the main application window
         try {
@@ -348,6 +351,7 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         jMenuItemRecover = new javax.swing.JMenuItem();
         jSeparator10 = new javax.swing.JSeparator();
         jMenuItemExit = new javax.swing.JMenuItem();
+        jMenuItemCreatePractical = new javax.swing.JMenuItem();
         jMenu10 = new javax.swing.JMenu();
         jMenuItem14 = new javax.swing.JMenuItem();
         jMenuItem15 = new javax.swing.JMenuItem();
@@ -1582,6 +1586,18 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
     jSeparator10.setName("jSeparator10"); // NOI18N
     jMenuFile.add(jSeparator10);
 
+    jMenuItemCreatePractical.setText("Create Practical");
+    jMenuItemCreatePractical.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK | java.awt.event.InputEvent.SHIFT_MASK));
+    jMenuItemCreatePractical.setName("jMenuItemCreatePractical");
+    jMenuItemCreatePractical.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            createPracticalActionPerformed(evt);
+        }
+    });
+    jMenuFile.add(jMenuItemCreatePractical);
+
+    jMenuFile.add(new javax.swing.JSeparator());
+
     jMenuItemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
     jMenuItemExit.setText("Exit");
     jMenuItemExit.setName("jMenuItemExit"); // NOI18N
@@ -1710,6 +1726,17 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
         }
     });
     jMenu1.add(jMenuItemAutocorrect);
+
+    javax.swing.JMenuItem jMenuItemDiagram = new javax.swing.JMenuItem();
+    jMenuItemDiagram.setText("CPU Architecture Diagram");
+    jMenuItemDiagram.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            architectureDiagram.setVisible(true);
+            architectureDiagram.toFront();
+            updateArchitectureDiagram();
+        }
+    });
+    jMenu1.add(jMenuItemDiagram);
 
     jMenuBar1.add(jMenu1);
 
@@ -2226,7 +2253,9 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                if (comments != null && matrix.select < comments.length) {
                    jLabelError.setText(comments[matrix.select]);
                }
+                currentMnemonic = jTableAssembler.getValueAt(matrix.select, 3).toString();
                String stepExpl = matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString()));
+                currentExplanation = "Stepped backward to: " + currentMnemonic;
                jLabelComment.setText(stepExpl);
                if (lintStatusLabel != null) lintStatusLabel.setText("  Step Explainer: " + stepExpl + " ");
                if (modernIDEUI != null) modernIDEUI.updateStepExplainer(stepExpl);
@@ -2926,11 +2955,17 @@ public class Assembler extends javax.swing.JFrame implements Runnable{
                    jLabelComment.setFont(new Font("Segoe UI", Font.BOLD, 12));
                    jLabelComment.setForeground(new Color(13, 110, 253));
                    jLabelComment.setVisible(true);
-                   String stepExpl = matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString()));
-                   jLabelComment.setText("<html><b> Step Explainer:</b> " + stepExpl + "</html>");
-                   if (lintStatusLabel != null) lintStatusLabel.setText("  Step Explainer: " + stepExpl + " ");
-                   if (modernIDEUI != null) modernIDEUI.updateStepExplainer(stepExpl);
-                   matrix.select=matrix.select+Integer.parseInt(jTableAssembler.getValueAt(matrix.select, 5).toString().trim());
+                   if (comments != null && matrix.select < comments.length) {
+                    jLabelError.setText(comments[matrix.select]);
+                }
+                currentMnemonic = jTableAssembler.getValueAt(matrix.select, 3).toString();
+                String stepExpl = matrix.comment(engine.Hex2Dec(jTableAssembler.getValueAt(matrix.select, 4).toString()));
+                currentExplanation = stepExpl;
+                jLabelComment.setText(stepExpl);
+                if (lintStatusLabel != null) lintStatusLabel.setText("  Step Explainer: " + stepExpl + " ");
+                if (modernIDEUI != null) modernIDEUI.updateStepExplainer(stepExpl);
+                
+                matrix.select=matrix.select+Integer.parseInt(jTableAssembler.getValueAt(matrix.select, 5).toString().trim());
                    break loop;
               }
            }
@@ -3722,6 +3757,30 @@ public int find=0;
         }
     }
 
+    public void updateArchitectureDiagram() {
+        if (architectureDiagram == null || !architectureDiagram.isVisible()) return;
+        
+        java.util.Map<String, String> regs = new java.util.HashMap<>();
+        regs.put("A", engine.Dec2Hex2digit(matrix.A));
+        regs.put("B", engine.Dec2Hex2digit(matrix.B));
+        regs.put("C", engine.Dec2Hex2digit(matrix.C));
+        regs.put("D", engine.Dec2Hex2digit(matrix.D));
+        regs.put("E", engine.Dec2Hex2digit(matrix.E));
+        regs.put("H", engine.Dec2Hex2digit(matrix.H));
+        regs.put("L", engine.Dec2Hex2digit(matrix.L));
+        regs.put("SP", engine.Dec2Hex(matrix.SP));
+        regs.put("PC", engine.Dec2Hex(matrix.PC));
+
+        java.util.Map<String, Boolean> flgs = new java.util.HashMap<>();
+        flgs.put("S", (matrix.F & 128) != 0);
+        flgs.put("Z", (matrix.F & 64) != 0);
+        flgs.put("AC", (matrix.F & 16) != 0);
+        flgs.put("P", (matrix.F & 4) != 0);
+        flgs.put("CY", (matrix.F & 1) != 0);
+
+        architectureDiagram.updateState(currentMnemonic, currentExplanation, regs, flgs);
+    }
+
     public void set()
     {
         setIOPort();
@@ -3732,6 +3791,7 @@ public int find=0;
         if (modernIDEUI != null) {
             modernIDEUI.refreshData();
         }
+        updateArchitectureDiagram();
     }
 
     
@@ -4594,6 +4654,27 @@ public int find=0;
     public javax.swing.JTabbedPane getTabbedPaneInterface() {
         return jTabbedPaneInterface;
     }
+
+    /** Step log for practical export */
+    public java.util.List<String> stepLog = new java.util.ArrayList<>();
+
+    /** Add a step trace entry */
+    public void addStepLog(String entry) {
+        stepLog.add(entry);
+    }
+
+    /** Clear step log */
+    public void clearStepLog() {
+        stepLog.clear();
+    }
+
+    /** Open Create Practical dialog */
+    private void createPracticalActionPerformed(java.awt.event.ActionEvent evt) {
+        CreatePracticalDialog dlg = new CreatePracticalDialog(this, stepLog);
+        dlg.setVisible(true);
+    }
+
+    private javax.swing.JMenuItem jMenuItemCreatePractical;
 
 }
 
