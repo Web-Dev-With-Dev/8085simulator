@@ -15,6 +15,67 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 public class ModernIDEUI extends JPanel {
+    public static class VectorIcon implements javax.swing.Icon {
+        private String type;
+        private java.awt.Color color;
+        public VectorIcon(String type, java.awt.Color color) {
+            this.type = type;
+            this.color = color;
+        }
+        @Override public int getIconWidth() { return 24; }
+        @Override public int getIconHeight() { return 24; }
+        @Override public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.setStroke(new java.awt.BasicStroke(2.0f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+            g2.translate(x, y);
+            
+            switch (type) {
+                case "Editor":
+                    g2.drawRoundRect(4, 3, 16, 18, 4, 4);
+                    g2.drawLine(8, 8, 16, 8);
+                    g2.drawLine(8, 12, 16, 12);
+                    g2.drawLine(8, 16, 12, 16);
+                    break;
+                case "Registers":
+                    for(int i=0; i<2; i++) {
+                        for(int j=0; j<2; j++) {
+                            g2.drawRect(4 + i*9, 4 + j*9, 7, 7);
+                        }
+                    }
+                    break;
+                case "Memory":
+                    g2.drawRect(6, 2, 12, 20);
+                    for(int i=6; i<=18; i+=4) {
+                        g2.drawLine(4, i, 6, i);
+                        g2.drawLine(18, i, 20, i);
+                    }
+                    g2.fillRect(9, 5, 6, 14);
+                    break;
+                case "Devices":
+                    g2.drawRoundRect(2, 6, 20, 12, 4, 4);
+                    for(int i=6; i<=18; i+=4) {
+                       g2.drawRect(i, 9, 2, 2);
+                    }
+                    g2.drawRect(8, 14, 8, 2);
+                    break;
+                case "Subroutine":
+                    g2.drawLine(6, 4, 6, 18);
+                    g2.drawLine(6, 18, 16, 18);
+                    g2.drawLine(16, 18, 12, 14);
+                    g2.drawLine(16, 18, 12, 22);
+                    break;
+                case "Interrupts":
+                    int[] xP = {14, 6, 11, 10, 18, 13};
+                    int[] yP = {2, 12, 12, 22, 10, 10};
+                    g2.fillPolygon(xP, yP, 6);
+                    break;
+            }
+            g2.dispose();
+        }
+    }
+
 
     // ── Colour Palette ────────────────────────────────────────────────────────
     public static final Color COLOR_BG_DARK      = new Color(0x0D, 0x0E, 0x11);
@@ -521,14 +582,13 @@ public class ModernIDEUI extends JPanel {
         boolean active = id.equals(activeSidebarItem);
         btn.setBackground(active ? COLOR_PRIMARY_BLUE : COLOR_BG_SIDEBAR);
 
-        JLabel lblIcon = new JLabel(icon, SwingConstants.CENTER);
-        lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
-        lblIcon.setForeground(active ? Color.WHITE : COLOR_CYAN_ACCENT);
+        JLabel lblIcon = new JLabel();
+        lblIcon.setIcon(new VectorIcon(id, active ? Color.WHITE : COLOR_CYAN_ACCENT));
+        lblIcon.setHorizontalAlignment(SwingConstants.CENTER);
         lblIcon.setOpaque(false);
         lblIcon.setToolTipText(id);
 
-        String display = id.length() > 8 ? id.substring(0, 7) + "." : id;
-        JLabel lblText = new JLabel(display, SwingConstants.CENTER);
+        JLabel lblText = new JLabel(id, SwingConstants.CENTER);
         lblText.setFont(new Font("Segoe UI", Font.PLAIN, 10));
         lblText.setForeground(active ? COLOR_TEXT_PRIMARY : COLOR_TEXT_MUTED);
         lblText.setOpaque(false);
