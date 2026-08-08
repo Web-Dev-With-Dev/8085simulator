@@ -4295,52 +4295,63 @@ public int find=0;
 
     public void applyTheme(String mode) {
         try {
+            boolean isDarkTheme = true;
             if ("dark".equalsIgnoreCase(mode)) {
                 com.formdev.flatlaf.FlatDarkLaf.setup();
+                isDarkTheme = true;
             } else if ("light".equalsIgnoreCase(mode)) {
                 com.formdev.flatlaf.FlatLightLaf.setup();
+                isDarkTheme = false;
             } else {
-                javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+                com.formdev.flatlaf.FlatDarkLaf.setup();
+                isDarkTheme = true;
             }
 
-            // Update all windows UI — but if ModernIDEUI is active, we must
-            // re-add it afterward because updateComponentTreeUI may reset the content pane.
+            ModernIDEUI.updateThemeColors(isDarkTheme);
+            ArchitectureDiagram.updateThemeColors(isDarkTheme);
+
             boolean hasModernUI = (modernIDEUI != null);
             for (java.awt.Window w : java.awt.Window.getWindows()) {
                 javax.swing.SwingUtilities.updateComponentTreeUI(w);
             }
 
-            // If ModernIDEUI was set, re-ensure it is the content pane (theme update may reset it)
             if (hasModernUI) {
-                if (getContentPane().getComponentCount() == 0 ||
-                        !(getContentPane().getComponent(0) instanceof ModernIDEUI)) {
-                    getContentPane().removeAll();
-                    getContentPane().setLayout(new java.awt.BorderLayout());
-                    getContentPane().add(modernIDEUI, java.awt.BorderLayout.CENTER);
-                }
-                modernIDEUI.reapplyColorScheme();
+                getContentPane().removeAll();
+                getContentPane().setLayout(new java.awt.BorderLayout());
+                modernIDEUI = new ModernIDEUI(this);
+                getContentPane().add(modernIDEUI, java.awt.BorderLayout.CENTER);
+            }
+
+            if (architectureDiagram != null && architectureDiagram.isVisible()) {
+                architectureDiagram.dispose();
+                architectureDiagram = new ArchitectureDiagram(this);
+                architectureDiagram.setVisible(true);
             }
 
             if (textEditor != null && textEditor.jTextPane1 != null) {
-                boolean isDark = com.formdev.flatlaf.FlatLaf.isLafDark();
-                if (isDark) {
+                if (isDarkTheme) {
                     textEditor.jTextPane1.setBackground(new java.awt.Color(0x1E, 0x1E, 0x1E));
                     textEditor.jTextPane1.setForeground(new java.awt.Color(0xD4, 0xD4, 0xD4));
                     textEditor.jTextPane1.setCaretColor(java.awt.Color.WHITE);
                 } else {
-                    java.awt.Color sysBg = javax.swing.UIManager.getColor("TextPane.background");
-                    textEditor.jTextPane1.setBackground(sysBg != null ? sysBg : java.awt.Color.WHITE);
+                    textEditor.jTextPane1.setBackground(java.awt.Color.WHITE);
                     textEditor.jTextPane1.setForeground(java.awt.Color.BLACK);
                     textEditor.jTextPane1.setCaretColor(java.awt.Color.BLACK);
                 }
-                if (textEditor.jScrollPane1 != null) {
-                    textEditor.jScrollPane1.getViewport().setBackground(
-                        textEditor.jTextPane1.getBackground());
-                }
-                textEditor.colorEditor();
             }
-
-            optimizeAllTables();
+            
+            styleAssemblerTable(isDarkTheme);
+            styleTable(jTableRegister, isDarkTheme, 110, 50, 30);
+            styleTable(jTableFlagregister, isDarkTheme, 110, 50, 30);
+            styleTable(jTableCounter, isDarkTheme, 180, 100, 80);
+            styleTable(jTableInterrupt, isDarkTheme, 44, 44, 44);
+            styleTable(jTableRIM, isDarkTheme, 38, 38, 38);
+            styleTable(jTableSIM, isDarkTheme, 38, 38, 38);
+            styleTable(jTableNoConverter, isDarkTheme, 100, 100, 100);
+            styleTable(jTablePort, isDarkTheme, 100, 60, 60);
+            styleTable(jTable8255, isDarkTheme, 100, 60, 60);
+            styleTable(jTableMemory, isDarkTheme, 100, 60, 60);
+            
             revalidate();
             repaint();
         } catch (Exception ex) {

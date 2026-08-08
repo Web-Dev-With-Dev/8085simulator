@@ -214,12 +214,12 @@ public class InterruptServiceSubroutine extends javax.swing.JFrame {
         jSeparator1.setName("jSeparator1"); // NOI18N
 
         jLabel5.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel5.setForeground(new java.awt.Color(153, 0, 0));
+//         jLabel5.setForeground(new java.awt.Color(153, 0, 0));
         jLabel5.setText("  INTERRUPTS");
         jLabel5.setName("jLabel5"); // NOI18N
 
         jLabel6.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel6.setForeground(new java.awt.Color(0, 51, 153));
+//         jLabel6.setForeground(new java.awt.Color(0, 51, 153));
         jLabel6.setText("CALL LOCATIONS");
         jLabel6.setName("jLabel6"); // NOI18N
 
@@ -304,7 +304,7 @@ public class InterruptServiceSubroutine extends javax.swing.JFrame {
         jLabelRst7.setName("jLabelRst7"); // NOI18N
 
         jLabel27.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel27.setForeground(new java.awt.Color(0, 102, 0));
+//         jLabel27.setForeground(new java.awt.Color(0, 102, 0));
         jLabel27.setText("     Interrupt Service Subroutine");
         jLabel27.setName("jLabel27"); // NOI18N
 

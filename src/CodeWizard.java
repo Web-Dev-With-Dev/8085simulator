@@ -401,17 +401,17 @@ public class CodeWizard extends javax.swing.JFrame {
         });
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel1.setForeground(new java.awt.Color(153, 0, 204));
+//         jLabel1.setForeground(new java.awt.Color(153, 0, 204));
         jLabel1.setText("         Rough Work");
         jLabel1.setName("jLabel1"); // NOI18N
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel2.setForeground(new java.awt.Color(153, 102, 0));
+//         jLabel2.setForeground(new java.awt.Color(153, 102, 0));
         jLabel2.setText("Code Guide ");
         jLabel2.setName("jLabel2"); // NOI18N
 
         jLabel3.setFont(new java.awt.Font("Arial", 1, 11));
-        jLabel3.setForeground(new java.awt.Color(153, 153, 153));
+//         jLabel3.setForeground(new java.awt.Color(153, 153, 153));
         jLabel3.setText("N.B: Copy Rough work to the main workspace.");
         jLabel3.setName("jLabel3"); // NOI18N
 

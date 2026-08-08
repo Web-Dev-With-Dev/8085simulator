@@ -7,16 +7,43 @@ import java.awt.geom.*;
 public class ArchitectureDiagram extends JFrame {
 
     // Modern Colors
-    private static final Color COLOR_BG_DARK = new Color(0x0A, 0x0C, 0x10);
-    private static final Color COLOR_CPU_BG = new Color(0x1F, 0x22, 0x2B);
-    private static final Color COLOR_CPU_PIN = new Color(0xC0, 0xC0, 0xC0);
-    private static final Color COLOR_MEM_BG = new Color(0x1A, 0x4D, 0x2E); // PCB Green
-    private static final Color COLOR_BLOCK = new Color(0x2B, 0x30, 0x3D);
-    private static final Color COLOR_BLOCK_BORDER = new Color(0x3B, 0x40, 0x50);
-    private static final Color COLOR_HIGHLIGHT = new Color(0x3B, 0x82, 0xF6); // Blue highlight
-    private static final Color COLOR_TEXT = new Color(0xF3, 0xF4, 0xF6);
-    private static final Color COLOR_MUTED = new Color(0x9C, 0xA3, 0xAF);
-    private static final Color COLOR_BUS = new Color(0x4B, 0x55, 0x63);
+    public static Color COLOR_BG_DARK = new Color(0x0A, 0x0C, 0x10);
+    public static Color COLOR_CPU_BG = new Color(0x1F, 0x22, 0x2B);
+    public static Color COLOR_CPU_PIN = new Color(0xC0, 0xC0, 0xC0);
+    public static Color COLOR_MEM_BG = new Color(0x1A, 0x4D, 0x2E); // PCB Green
+    public static Color COLOR_BLOCK = new Color(0x2B, 0x30, 0x3D);
+    public static Color COLOR_BLOCK_BORDER = new Color(0x3B, 0x40, 0x50);
+    public static Color COLOR_HIGHLIGHT = new Color(0x3B, 0x82, 0xF6); // Blue highlight
+    public static Color COLOR_TEXT = new Color(0xF3, 0xF4, 0xF6);
+    public static Color COLOR_MUTED = new Color(0x9C, 0xA3, 0xAF);
+    public static Color COLOR_BUS = new Color(0x4B, 0x55, 0x63);
+
+    public static void updateThemeColors(boolean isDark) {
+        if (isDark) {
+            COLOR_BG_DARK = new java.awt.Color(0x0A, 0x0C, 0x10);
+            COLOR_CPU_BG = new java.awt.Color(0x1F, 0x22, 0x2B);
+            COLOR_CPU_PIN = new java.awt.Color(0xC0, 0xC0, 0xC0);
+            COLOR_MEM_BG = new java.awt.Color(0x1A, 0x4D, 0x2E);
+            COLOR_BLOCK = new java.awt.Color(0x2B, 0x30, 0x3D);
+            COLOR_BLOCK_BORDER = new java.awt.Color(0x3B, 0x40, 0x50);
+            COLOR_HIGHLIGHT = new java.awt.Color(0x3B, 0x82, 0xF6);
+            COLOR_TEXT = new java.awt.Color(0xF3, 0xF4, 0xF6);
+            COLOR_MUTED = new java.awt.Color(0x9C, 0xA3, 0xAF);
+            COLOR_BUS = new java.awt.Color(0x4B, 0x55, 0x63);
+        } else {
+            COLOR_BG_DARK = new java.awt.Color(0xF3, 0xF4, 0xF6);
+            COLOR_CPU_BG = new java.awt.Color(0xFF, 0xFF, 0xFF);
+            COLOR_CPU_PIN = new java.awt.Color(0x73, 0x73, 0x73);
+            COLOR_MEM_BG = new java.awt.Color(0x22, 0xC5, 0x5E);
+            COLOR_BLOCK = new java.awt.Color(0xF9, 0xFA, 0xFB);
+            COLOR_BLOCK_BORDER = new java.awt.Color(0xE5, 0xE7, 0xEB);
+            COLOR_HIGHLIGHT = new java.awt.Color(0x3B, 0x82, 0xF6);
+            COLOR_TEXT = new java.awt.Color(0x11, 0x18, 0x27);
+            COLOR_MUTED = new java.awt.Color(0x6B, 0x72, 0x80);
+            COLOR_BUS = new java.awt.Color(0x9C, 0xA3, 0xAF);
+        }
+    }
+
 
     private DiagramPanel panel;
     private Assembler assembler;
@@ -40,8 +67,8 @@ public class ArchitectureDiagram extends JFrame {
 
         // Control Panel
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 15));
-        controlPanel.setBackground(new Color(0x11, 0x18, 0x27));
-        controlPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0x1F, 0x29, 0x37)));
+        controlPanel.setBackground(COLOR_CPU_BG);
+        controlPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, COLOR_BLOCK_BORDER));
 
         JButton btnBack = createStyledButton("<< Step Backward", new Color(0x4B, 0x55, 0x63));
         btnBack.addActionListener(e -> {

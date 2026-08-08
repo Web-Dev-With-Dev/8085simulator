@@ -55,7 +55,7 @@ public class DelaySubroutine extends javax.swing.JFrame {
         setResizable(false);
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel1.setForeground(new java.awt.Color(102, 0, 102));
+//         jLabel1.setForeground(new java.awt.Color(102, 0, 102));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Delay Subroutine Label : ");
         jLabel1.setName("jLabel1"); // NOI18N
@@ -64,7 +64,7 @@ public class DelaySubroutine extends javax.swing.JFrame {
         jTextFieldDelayLabel.setName("jTextFieldDelayLabel"); // NOI18N
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel2.setForeground(new java.awt.Color(0, 102, 102));
+//         jLabel2.setForeground(new java.awt.Color(0, 102, 102));
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Delay for  :");
         jLabel2.setName("jLabel2"); // NOI18N
@@ -78,7 +78,7 @@ public class DelaySubroutine extends javax.swing.JFrame {
         jLabel3.setName("jLabel3"); // NOI18N
 
         jLabel4.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel4.setForeground(new java.awt.Color(102, 102, 0));
+//         jLabel4.setForeground(new java.awt.Color(102, 102, 0));
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel4.setText("Format of Subroutine  : ");
         jLabel4.setName("jLabel4"); // NOI18N
@@ -96,18 +96,18 @@ public class DelaySubroutine extends javax.swing.JFrame {
         });
 
         jLabel5.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel5.setForeground(new java.awt.Color(102, 0, 102));
+//         jLabel5.setForeground(new java.awt.Color(102, 0, 102));
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel5.setText("For this format maximum delay can be of ");
         jLabel5.setName("jLabel5"); // NOI18N
 
         jLabelMaximumDelay.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabelMaximumDelay.setForeground(new java.awt.Color(0, 0, 102));
+//         jLabelMaximumDelay.setForeground(new java.awt.Color(0, 0, 102));
         jLabelMaximumDelay.setText("100");
         jLabelMaximumDelay.setName("jLabelMaximumDelay"); // NOI18N
 
         jLabel7.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel7.setForeground(new java.awt.Color(153, 0, 153));
+//         jLabel7.setForeground(new java.awt.Color(153, 0, 153));
         jLabel7.setText("ms");
         jLabel7.setName("jLabel7"); // NOI18N
 
@@ -120,7 +120,7 @@ public class DelaySubroutine extends javax.swing.JFrame {
         });
 
         jLabel6.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel6.setForeground(new java.awt.Color(51, 153, 0));
+//         jLabel6.setForeground(new java.awt.Color(51, 153, 0));
         jLabel6.setText("Time for 1 T-state : ");
         jLabel6.setName("jLabel6"); // NOI18N
 
@@ -144,7 +144,7 @@ public class DelaySubroutine extends javax.swing.JFrame {
         jLabel8.setName("jLabel8"); // NOI18N
 
         jLabel9.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel9.setForeground(new java.awt.Color(102, 0, 0));
+//         jLabel9.setForeground(new java.awt.Color(102, 0, 0));
         jLabel9.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel9.setText("Registers used : ");
         jLabel9.setName("jLabel9"); // NOI18N
@@ -165,18 +165,18 @@ public class DelaySubroutine extends javax.swing.JFrame {
         jComboBoxRegPair.setName("jComboBoxRegPair"); // NOI18N
 
         jLabel10.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel10.setForeground(new java.awt.Color(102, 0, 102));
+//         jLabel10.setForeground(new java.awt.Color(102, 0, 102));
         jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel10.setText("& minimum delay of ");
         jLabel10.setName("jLabel10"); // NOI18N
 
         jLabel11.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabel11.setForeground(new java.awt.Color(153, 0, 153));
+//         jLabel11.setForeground(new java.awt.Color(153, 0, 153));
         jLabel11.setText("ms ");
         jLabel11.setName("jLabel11"); // NOI18N
 
         jLabelMinimumDelay.setFont(new java.awt.Font("Tahoma", 1, 11));
-        jLabelMinimumDelay.setForeground(new java.awt.Color(0, 0, 102));
+//         jLabelMinimumDelay.setForeground(new java.awt.Color(0, 0, 102));
         jLabelMinimumDelay.setText("100");
         jLabelMinimumDelay.setName("jLabelMinimumDelay"); // NOI18N
 

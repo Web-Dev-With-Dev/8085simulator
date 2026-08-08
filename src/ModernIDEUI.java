@@ -78,20 +78,55 @@ public class ModernIDEUI extends JPanel {
 
 
     // ── Colour Palette ────────────────────────────────────────────────────────
-    public static final Color COLOR_BG_DARK      = new Color(0x0D, 0x0E, 0x11);
-    public static final Color COLOR_BG_SIDEBAR   = new Color(0x12, 0x13, 0x16);
-    public static final Color COLOR_BG_HEADER    = new Color(0x12, 0x13, 0x16);
-    public static final Color COLOR_BG_TOOLBAR   = new Color(0x16, 0x17, 0x1C);
-    public static final Color COLOR_BG_CARD      = new Color(0x16, 0x18, 0x1D);
-    public static final Color COLOR_CARD_BORDER  = new Color(0x22, 0x24, 0x2B);
-    public static final Color COLOR_PRIMARY_BLUE = new Color(0x00, 0x78, 0xD4);
-    public static final Color COLOR_CYAN_ACCENT  = new Color(0x4F, 0xC3, 0xF7);
-    public static final Color COLOR_AMBER_ACCENT = new Color(0xF5, 0x9E, 0x0B);
-    public static final Color COLOR_GREEN_ACCENT = new Color(0x22, 0xC5, 0x5E);
-    public static final Color COLOR_RED_ACCENT   = new Color(0xEF, 0x44, 0x44);
-    public static final Color COLOR_TEXT_PRIMARY = new Color(0xFF, 0xFF, 0xFF);
-    public static final Color COLOR_TEXT_MUTED   = new Color(0x8E, 0x92, 0x9E);
-    public static final Color COLOR_ROW_ACTIVE   = new Color(0x00, 0x4B, 0x87);
+    public static Color COLOR_BG_DARK      = new Color(0x0D, 0x0E, 0x11);
+    public static Color COLOR_BG_SIDEBAR   = new Color(0x12, 0x13, 0x16);
+    public static Color COLOR_BG_HEADER    = new Color(0x12, 0x13, 0x16);
+    public static Color COLOR_BG_TOOLBAR   = new Color(0x16, 0x17, 0x1C);
+    public static Color COLOR_BG_CARD      = new Color(0x16, 0x18, 0x1D);
+    public static Color COLOR_CARD_BORDER  = new Color(0x22, 0x24, 0x2B);
+    public static Color COLOR_PRIMARY_BLUE = new Color(0x00, 0x78, 0xD4);
+    public static Color COLOR_CYAN_ACCENT  = new Color(0x4F, 0xC3, 0xF7);
+    public static Color COLOR_AMBER_ACCENT = new Color(0xF5, 0x9E, 0x0B);
+    public static Color COLOR_GREEN_ACCENT = new Color(0x22, 0xC5, 0x5E);
+    public static Color COLOR_RED_ACCENT   = new Color(0xEF, 0x44, 0x44);
+    public static Color COLOR_TEXT_PRIMARY = new Color(0xFF, 0xFF, 0xFF);
+    public static Color COLOR_TEXT_MUTED   = new Color(0x8E, 0x92, 0x9E);
+    public static Color COLOR_ROW_ACTIVE   = new Color(0x00, 0x4B, 0x87);
+
+    public static void updateThemeColors(boolean isDark) {
+        if (isDark) {
+            COLOR_BG_DARK      = new java.awt.Color(0x0D, 0x0E, 0x11);
+            COLOR_BG_SIDEBAR   = new java.awt.Color(0x12, 0x13, 0x16);
+            COLOR_BG_HEADER    = new java.awt.Color(0x12, 0x13, 0x16);
+            COLOR_BG_TOOLBAR   = new java.awt.Color(0x16, 0x17, 0x1C);
+            COLOR_BG_CARD      = new java.awt.Color(0x16, 0x18, 0x1D);
+            COLOR_CARD_BORDER  = new java.awt.Color(0x22, 0x24, 0x2B);
+            COLOR_PRIMARY_BLUE = new java.awt.Color(0x00, 0x78, 0xD4);
+            COLOR_CYAN_ACCENT  = new java.awt.Color(0x4F, 0xC3, 0xF7);
+            COLOR_AMBER_ACCENT = new java.awt.Color(0xF5, 0x9E, 0x0B);
+            COLOR_GREEN_ACCENT = new java.awt.Color(0x22, 0xC5, 0x5E);
+            COLOR_RED_ACCENT   = new java.awt.Color(0xEF, 0x44, 0x44);
+            COLOR_TEXT_PRIMARY = new java.awt.Color(0xFF, 0xFF, 0xFF);
+            COLOR_TEXT_MUTED   = new java.awt.Color(0x8E, 0x92, 0x9E);
+            COLOR_ROW_ACTIVE   = new java.awt.Color(0x00, 0x4B, 0x87);
+        } else {
+            COLOR_BG_DARK      = new java.awt.Color(0xF3, 0xF4, 0xF6);
+            COLOR_BG_SIDEBAR   = new java.awt.Color(0xFF, 0xFF, 0xFF);
+            COLOR_BG_HEADER    = new java.awt.Color(0xFF, 0xFF, 0xFF);
+            COLOR_BG_TOOLBAR   = new java.awt.Color(0xF9, 0xFA, 0xFB);
+            COLOR_BG_CARD      = new java.awt.Color(0xFF, 0xFF, 0xFF);
+            COLOR_CARD_BORDER  = new java.awt.Color(0xE5, 0xE7, 0xEB);
+            COLOR_PRIMARY_BLUE = new java.awt.Color(0x00, 0x6B, 0xBD);
+            COLOR_CYAN_ACCENT  = new java.awt.Color(0x02, 0x84, 0xC7);
+            COLOR_AMBER_ACCENT = new java.awt.Color(0xD9, 0x77, 0x06);
+            COLOR_GREEN_ACCENT = new java.awt.Color(0x16, 0xA3, 0x4A);
+            COLOR_RED_ACCENT   = new java.awt.Color(0xDC, 0x26, 0x26);
+            COLOR_TEXT_PRIMARY = new java.awt.Color(0x11, 0x18, 0x27);
+            COLOR_TEXT_MUTED   = new java.awt.Color(0x6B, 0x72, 0x80);
+            COLOR_ROW_ACTIVE   = new java.awt.Color(0xE0, 0xF2, 0xFE);
+        }
+    }
+
 
     // ── Recent files persistence ───────────────────────────────────────────────
     private static final String PREFS_NODE       = "AuraStudio";
@@ -533,7 +568,7 @@ public class ModernIDEUI extends JPanel {
         btn.addActionListener(l);
         btn.addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) {
-                if (btn.isEnabled()) btn.setBackground(new Color(0x25, 0x27, 0x32));
+                if (btn.isEnabled()) btn.setBackground(COLOR_BG_TOOLBAR);
             }
             @Override public void mouseExited(MouseEvent e)  {
                 if (btn.isEnabled() && btn != btnAssembleBar) btn.setBackground(COLOR_BG_CARD);
@@ -607,7 +642,7 @@ public class ModernIDEUI extends JPanel {
                 handleSidebarAction(id);
             }
             @Override public void mouseEntered(MouseEvent e) {
-                if (!id.equals(activeSidebarItem)) btn.setBackground(new Color(0x1E, 0x20, 0x27));
+                if (!id.equals(activeSidebarItem)) btn.setBackground(COLOR_BG_TOOLBAR);
             }
             @Override public void mouseExited(MouseEvent e)  {
                 if (!id.equals(activeSidebarItem)) btn.setBackground(COLOR_BG_SIDEBAR);
@@ -837,9 +872,9 @@ public class ModernIDEUI extends JPanel {
 
     public EditorTab newTabWithContent(String title, String content, File file) {
         TextEditor te = new TextEditor(assembler);
-        te.jTextPane1.setBackground(new Color(0x1E, 0x1E, 0x1E));
-        te.jTextPane1.setForeground(new Color(0xD4, 0xD4, 0xD4));
-        te.jTextPane1.setCaretColor(Color.WHITE);
+        te.jTextPane1.setBackground(COLOR_BG_DARK);
+        te.jTextPane1.setForeground(COLOR_TEXT_PRIMARY);
+        te.jTextPane1.setCaretColor(COLOR_TEXT_PRIMARY);
         te.jTextPane1.setEditable(true);
         if (content != null) {
             te.jTextPane1.setText(content);
@@ -1100,7 +1135,7 @@ public class ModernIDEUI extends JPanel {
                 }
             }
             @Override public void mouseEntered(MouseEvent e) {
-                if (tab != activeTab) p.setBackground(new Color(0x1A, 0x1B, 0x20));
+                if (tab != activeTab) p.setBackground(COLOR_BG_TOOLBAR);
             }
             @Override public void mouseExited(MouseEvent e) {
                 if (tab != activeTab) p.setBackground(COLOR_BG_HEADER);
@@ -1284,7 +1319,7 @@ public class ModernIDEUI extends JPanel {
                 final String p = path;
                 item.addMouseListener(new MouseAdapter() {
                     @Override public void mouseClicked(MouseEvent e) { loadFilePath(p); }
-                    @Override public void mouseEntered(MouseEvent e) { item.setForeground(Color.WHITE); }
+                    @Override public void mouseEntered(MouseEvent e) { item.setForeground(COLOR_PRIMARY_BLUE); }
                     @Override public void mouseExited(MouseEvent e)  { item.setForeground(COLOR_CYAN_ACCENT); }
                 });
                 recentListPanel.add(item);
@@ -1758,9 +1793,9 @@ public class ModernIDEUI extends JPanel {
         try {
             setBackground(COLOR_BG_DARK);
             if (assembler != null && assembler.textEditor != null && assembler.textEditor.jTextPane1 != null) {
-                assembler.textEditor.jTextPane1.setBackground(new Color(0x1E, 0x1E, 0x1E));
-                assembler.textEditor.jTextPane1.setForeground(new Color(0xD4, 0xD4, 0xD4));
-                assembler.textEditor.jTextPane1.setCaretColor(Color.WHITE);
+                assembler.textEditor.jTextPane1.setBackground(COLOR_BG_DARK);
+                assembler.textEditor.jTextPane1.setForeground(COLOR_TEXT_PRIMARY);
+                if(assembler.textEditor != null && assembler.textEditor.jTextPane1 != null) assembler.textEditor.jTextPane1.setCaretColor(COLOR_TEXT_PRIMARY);
             }
             if (regValLabels != null) for (JLabel l : regValLabels) if (l != null) l.setForeground(COLOR_TEXT_PRIMARY);
             if (regRowPanels != null) for (int i = 0; i < regRowPanels.length; i++)
