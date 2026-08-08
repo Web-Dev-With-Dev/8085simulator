@@ -580,10 +580,15 @@ public class ModernIDEUI extends JPanel {
         if (assembler.jTabbedPaneMemory == null) return;
         if (toolsDialog == null) {
             toolsDialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Tools", Dialog.ModalityType.MODELESS);
-            toolsDialog.setSize(700, 500);
+            toolsDialog.setSize(850, 700);
             toolsDialog.setLocationRelativeTo(this);
             toolsDialog.setLayout(new BorderLayout());
-            toolsDialog.add(assembler.jTabbedPaneMemory, BorderLayout.CENTER);
+            
+            javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(assembler.jTabbedPaneMemory);
+            scrollPane.setBorder(null);
+            scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+            
+            toolsDialog.add(scrollPane, BorderLayout.CENTER);
             toolsDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         }
         toolsDialog.setTitle(title);
